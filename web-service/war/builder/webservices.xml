@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Servlets>
+  <Servlet Name="Lrs: All Eq">
+    <Active>1</Active>
+    <Tooltip>Lrs: All Eq</Tooltip>
+    <Url>/gte/lrsc/servlet</Url>
+    <Type>nf</Type>
+    <Directory>native-algo/lrslib-042c/</Directory>
+    <Estimate>1</Estimate>
+    <MaxSeconds>600</MaxSeconds>
+  </Servlet>
+
+<!--
+  <Servlet Name="NativeServlet">
+    <Active>1</Active>
+    <Tooltip>NativeServlet</Tooltip>
+    <Url>/gte/native/servlet</Url>
+    <Type>nf</Type>
+    <Directory>native-algo/myNative/</Directory>
+    <BinaryWindows>test.bat</BinaryWindows>
+    <BinaryLinux>test.sh</BinaryLinux>
+    <MaxSeconds>600</MaxSeconds>
+  </Servlet> 
+  -->
+  
+  <Servlet Name="Lemke: One Eq">
+    <Active>1</Active>
+    <Tooltip>Lemke Find One Equilibrium (Strategic Form)</Tooltip>
+    <Url>/gte/matrix/</Url>
+    <Type>nf</Type>
+    <Directory></Directory>
+    <MaxSeconds>600</MaxSeconds>
+  </Servlet>
+
+  
+    <Servlet Name="Lemke: One Eq">
+    <Active>1</Active>
+    <Tooltip>Lemke Find One Equilibrium (Sequence Form)</Tooltip>
+    <Url>/gte/tree/</Url>
+    <Type>xf</Type>
+    <Directory></Directory>
+    <MaxSeconds>600</MaxSeconds>
+  </Servlet>
+
+  
+</Servlets>

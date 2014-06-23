@@ -1,0 +1,1716 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns="lse.math.games.builder.view.*"
+			   backgroundColor="0xB7BABC" minWidth="692" xmlns:model="lse.math.games.builder.model.*"
+			   creationComplete="init()" >
+	
+	<fx:Script>
+		<![CDATA[		
+			import lse.math.games.builder.io.FileManager;
+			import lse.math.games.builder.io.XMLExporter;
+			import lse.math.games.builder.model.Player;
+			import lse.math.games.builder.model.Strategy;
+			import lse.math.games.builder.settings.SCodes;
+			import lse.math.games.builder.settings.Settings;
+			import lse.math.games.builder.settings.UserSettings;
+			import lse.math.games.builder.viewmodel.AutoLabeller;
+			import lse.math.games.builder.viewmodel.TreeGrid;
+			
+			
+			
+			import mx.controls.Alert;
+			import mx.controls.ProgressBar;
+			import mx.core.FlexGlobals;
+			import mx.effects.easing.*;
+			import mx.events.FlexEvent;
+			import mx.events.IndexChangedEvent;
+			import mx.managers.PopUpManager;
+			import mx.utils.StringUtil;
+			
+			import spark.components.TitleWindow;
+			
+			import util.EvCodes;
+			import util.EventManager;
+			import util.Log;
+			import util.PromptTextInputCanvas;
+			import util.PromptTwoButtons;
+
+
+			// ------------------------------------
+			// Layout parameters
+			// ------------------------------------
+
+			
+			public var menuBarHeight:String = "30"; // orig: 30
+			public var buttonWidth1:String = "23";  // orig: 23
+			public var buttonHeight1:String = "24";  // orig: 24
+			public var buttonHeight2:String = "21";  // orig: 21
+			public var tabHeight:String = "22";  // orig: 22
+			public var arrowHeight:String = "16";  // orig: 16
+			public var arrowWidth:String = "70";  // orig: 70
+			public var algoComboBoxWidth:String = "150";  // orig: 111
+
+			// spacer for arrows first and then buttons below them
+			public var preUndoButtonsSpacer:String = "13"; 
+			public var undoButtonsReplaceSpacer:String = "46"; 
+			public var treeStepSpacer:String = "66"; 
+			public var treeStepSpacerButtons:String = "2"; 
+			public var playersStepSpacer:String = "10";  
+			public var playersStepSpacerButtons:String = "23"; 
+			public var infosetsStepSpacer:String = "17";  
+			public var infosetsStepSpacerButtons:String = "18"; 
+			public var movesStepSpacer:String = "15";
+			public var movesStepSpacerButtons:String = "18"; 
+			public var payoffsStepSpacer:String = "39"; 
+			public var payoffsStepSpacerButtons:String = "18"; 
+			public var postPayoffsStepSpacer:String = "73"; 
+			public var cogButtonSpacer:String = "4"; 
+
+			public var bottomMargin:String = "18"; 
+
+			// ------------------------------------
+			// START: Bindable propert
+			// ------------------------------------
+
+			
+			[Bindable]
+			public var seed:String;
+			
+			/**
+			 * Array of algorithms for the strategic form
+			 */
+			[Bindable]
+			public var nfalgos:Array = new Array();
+			
+			/**
+			 * Array of algorithms for the extended form
+			  */
+			[Bindable]
+			public var xfalgos:Array = new Array();
+			
+			//TODO: If possible, move the folowing two to the <fx:declaration>
+			private var log:Log = Log.instance;
+			
+			[Bindable]
+			//if moved to declarations, erase the 'added' property in 'filename' textbox 
+			private var fileManager:FileManager; 
+			
+			/**
+			 * Indicates wether we are in expanded mode or not
+			 *@default false  
+			 */
+			[Bindable]
+			private var expanded:Boolean = false;
+
+			/**
+			 * Indicates wether mouse scrolling on the extensive or strategic form is enabled
+			 *@default false  
+			 */
+			[Bindable]
+			private var mouseScrollingEnabled:Boolean = false;
+			
+			/**
+			 *@default Only one instance of this class.  
+			*/
+			private var eventManager:EventManager = EventManager.instance;
+			
+			
+			/**
+			 *Access to the system settings
+			 *@default Only one instance of this class.  
+			 */
+			private var settings:UserSettings = UserSettings.instance;
+
+			
+			/**
+			 *Indicates if we use the NEWGUI and what is the current stage we are in. 
+			 * <ul>
+			 * <li>-1: NEWGUI is tunred off</li>
+			 * <li>0: Tree stage</li>
+			 * <li>1: Players stage</li>
+			 * <li>2: Infosets stage</li>
+			 * <li>3: Moves stage</li>
+			 * <li>4: Payoffs stage</li>
+			 * </ul>
+			 *@default -1
+			 *@author Martin  
+			 */
+			[Bindable]
+			private var extensiveStep:int=-1;
+			
+			
+			/**
+			 * Binable property shows if NEWGUI is in tree stage.
+			 *@default false
+			 */
+			[Bindable]
+			private var eStep0:Boolean=false;
+			
+			/**
+			 * Binable property shows if NEWGUI is in players stage.
+			 *@default false
+			 */
+			[Bindable]
+			private var eStep1:Boolean=false;
+			
+			/**
+			 * Binable property shows if GUI is in infosets stage.
+			 *@default false
+			 */
+			[Bindable]
+			private var eStep2:Boolean=false;
+			
+			/**
+			 * Binable property shows if GUI is in moves stage.
+			 *@default false
+			 */
+			[Bindable]
+			private var eStep3:Boolean=false;
+			
+			/**
+			 * Binable property shows if GUI is in payoffs stage.
+			 *@default false
+			 */
+			[Bindable]
+			private var eStep4:Boolean=false;	
+			
+			/**
+			 *Indicates the current edit mode of the game.  
+			 * <ul>
+			 * <li>0: Extensive form (tree) is editable</li>
+			 * <li>1: Strategic form (matrix) is editable</li>
+			 * </ul>
+			 *@default 0
+			 *@author Martin  
+			 */			
+			[Bindable]
+			private var editMode:int=0;
+			
+			/**
+			 * Bindable property for the play name
+			 *@default ""
+			 *@author Martin  
+			 */	
+			[Bindable]
+			private var _player1Name:String="";
+
+			/**
+			 * Bindable property for the play name
+			 *@default ""
+			 *@author Martin  
+			 */
+			[Bindable]
+			private var _player2Name:String="";
+			
+			//CMP
+			
+			[Bindable]
+			private var _player3Name:String="";
+
+			/**
+			 * Indicates which player's payoffs are active in the menu bar
+			 *@default 1
+			 *@author Martin  
+			 */
+			private var ngPayoffsPlayer:int=1;
+			
+			/**
+			 * Bindable property indicates which player's moves are active in the menu bar
+			 *@default 1
+			 *@author Martin  
+			 */
+			private var ngMovesPlayer:int=1;
+			
+		
+			/**
+			 * Bindable property indicates if numbers are displayed in decimal or rational layout
+			 *@default false - rational layout active
+			 *@author Martin  
+			 */
+			[Bindable]
+			private var decimalLayout:Boolean=false;
+			
+			/**
+			 * Bindable property indicates if the TexInput for player1 is visible
+			 *@default false
+			 *@author Martin  
+			 */
+			[Bindable]
+			private var Player1InputVisible:Boolean=false;
+			
+			/**
+			 * Bindable property indicates if the TexInput for player2 is visible
+			 *@default false
+			 *@author Martin  
+			*/
+			[Bindable]
+			private var Player2InputVisible:Boolean=false;
+			
+			//cmp
+			
+			[Bindable]
+			private var Player3InputVisible:Boolean=false;
+			
+		
+
+			// ------------------------------------
+			// START: Icon Definitions
+			// ------------------------------------
+			
+			[Embed(source='../../../../../../assets/icons/decimal.png')]
+			[Bindable]
+			public var decimalIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/rational.png')]
+			[Bindable]
+			public var rationalIcon:Class;
+			
+			[Embed(source='../../../../../../assets/icons/zerosum.png')]
+			[Bindable]
+			public var zeroSumIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/nzerosum.png')]
+			[Bindable]
+			public var nzeroSumIcon:Class;
+			
+			[Embed(source='../../../../../../assets/icons/ng_tree.png')]
+			[Bindable]
+			public var ngTreeIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/ng_tree_hover.png')]
+			[Bindable]
+			public var ngTreeHoverIcon:Class; 
+			
+			[Embed(source='../../../../../../assets/icons/ng_players.png')]
+			[Bindable]
+			public var ngPlayersIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/ng_players_hover.png')]
+			[Bindable]
+			public var ngPlayersHoverIcon:Class; 
+
+			[Embed(source='../../../../../../assets/icons/ng_payoffs.png')]
+			[Bindable]
+			public var ngPayoffsIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/ng_payoffs_hover.png')]
+			[Bindable]
+			public var ngPayoffsHoverIcon:Class; 
+
+			[Embed(source='../../../../../../assets/icons/ng_infosets.png')]
+			[Bindable]
+			public var ngInfosetsIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/ng_infosets_hover.png')]
+			[Bindable]
+			public var ngInfosetsHoverIcon:Class; 
+
+			[Embed(source='../../../../../../assets/icons/ng_moves.png')]
+			[Bindable]
+			public var ngMovesIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/ng_moves_hover.png')]
+			[Bindable]
+			public var ngMovesHoverIcon:Class; 
+			
+			[Embed(source='../../../../../../assets/icons/ng_finalize.png')]
+			[Bindable]
+			public var ngFinalizeIcon:Class; 
+			[Embed(source='../../../../../../assets/icons/ng_finalize_hover.png')]
+			[Bindable]
+			public var ngFinalizeHoverIcon:Class; 
+
+
+			// ------------------------------------
+			// START: Toolbar related function
+			// ------------------------------------
+			
+			/**
+			 * Resets all NEWGUI Buttons 
+			 *@author Martin  
+			 */	
+			private function resetNewGuiButtons():void {
+				ngTreeAdd.selected=true;ngTreeDelete.selected=false;
+				ngPlayer1.selected=true;ngPlayer2.selected=false;
+				//cmp
+				ngPlayer3.selected=false;
+				ngChance.selected=false;
+				Player1InputVisible=false;Player2InputVisible=false;
+				ngInfosetsJoin.selected=true;ngInfosetsDisjoin.selected=false;ngInfosetsCut.selected=false;
+			}
+			
+			/**
+			 * Resets all NEWGUI Buttons and switches to tree stage 
+			 *@author Martin  
+			 */	
+			private function resetNewGUI():void{
+	
+				
+				if (editMode==0) {
+					setExtensiveStep(0);
+					resetNewGuiButtons();
+			
+					controller.toggleTreeMode(); 
+					controller.clear();
+					setExtensiveStep(0);
+					
+					tabNavigator.selectedIndex=0;
+					
+					var i:int=0;
+					for (i=0;i<10;i++){
+						controller.zoomIn();	
+					}
+					arrowMenu.enabled=true;
+					log.add(Log.HINT,canvas.height +"x"+ canvas.width+"-"+scrollbarEF.height+"x"+scrollbarEF.width);
+										
+				} else {
+					controller.toggleMatrixMode();
+					tabNavigator.selectedIndex=1;
+					arrowMenu.enabled=false;
+				}
+				
+				
+			}
+
+			/**
+			 * Resets all NEWGUI Buttons and checks the current stage 
+			 *@author Martin  
+			 */	
+			private function resetAndCheckEF():void {
+				resetNewGuiButtons();
+				checkExtensiveStep(0);
+				tabNavigator.selectedIndex=0;
+				changeEditMode(0);
+				arrowMenu.enabled=true;
+			}
+			
+			private function resetAndCheckSF():void {
+				
+				matrixEditor.init();
+				matrixEditor.matrix = matrix
+				matrixEditor.controller = controller;
+				matrixEditor.setMode(grid.isZeroSum);				
+				matrixEditor.setEditable(false);
+				tabNavigator.selectedIndex=1;
+				changeEditMode(1);
+				arrowMenu.enabled=false;
+			}
+			
+			/**
+			 * Directly called from the <it>creationComplete event</it> after the application is created. 
+			 * Determines if we use the NEWGUI and sets the variables accordingly.
+			 *@author Martin  
+			 */		
+			private function init():void{
+				
+				controller.getControllGuiModeEF=resetAndCheckEF;
+				controller.getControllGuiModeSF=resetAndCheckSF;
+				controller.clear();
+				resetNewGUI();
+			}
+			
+
+			/**
+			 * Sets the stage of the NEWGUI (0,1,2,3,4) or turns it off (-1)
+			 * Controlles the icons of the NEWGUI and sets the ActionClass of the controller according to the current stage 
+			 *@param value:int the current stage (-1,0,1,2,3,4)
+			 *@author Martin  
+			 */		
+			private function setExtensiveStep(value:int):void
+			{
+				ngTreeStep.setStyle("icon",ngTreeIcon);
+				ngPlayersStep.setStyle("icon",ngPlayersIcon);
+				ngInfosetsStep.setStyle("icon",ngInfosetsIcon);
+				ngMovesStep.setStyle("icon",ngMovesIcon);
+				ngPayoffsStep.setStyle("icon",ngPayoffsIcon);
+				
+				eStep0=false;
+				eStep1=false;
+				eStep2=false;
+				eStep3=false;
+				eStep4=false;
+				
+				checkExtensiveStep(value);
+				
+				extensiveStep=value;
+				Player1InputVisible=false;Player2InputVisible=false;
+				//is used in the Iset class to determine which node to add.
+				settings.setValue("SYSTEM_MODE_GUIDANCE",value);
+
+				//NEWGUI is disbaled, return immediately
+				if (value==-1) {
+					return;
+				}
+			
+				switch (extensiveStep) {
+					case 0:
+						ngTreeStep.setStyle("icon",ngTreeHoverIcon);
+						controller.getClickAction = getClickCallback(1);
+						controller.invalidate(true,true,true);
+						eStep0=true;
+						break ;
+					case 1:
+						ngPlayersStep.setStyle("icon",ngPlayersHoverIcon);
+						ngPlayer1Input.text=controller.grid.firstPlayer.name;
+						ngPlayer2Input.text=controller.grid.firstPlayer.nextPlayer.name;
+						
+						//CMP. TODO: Implement playerList and get name from that instead of using nextPlayer.  
+						ngPlayer3Input.text=controller.grid.firstPlayer.nextPlayer.nextPlayer.name;
+						
+						Player1InputVisible=ngPlayer1.selected;
+						Player2InputVisible=ngPlayer2.selected;
+						Player3InputVisible=ngPlayer3.selected;
+						
+						_player1Name=ngPlayer1Input.text
+						_player2Name=ngPlayer2Input.text
+						_player3Name=ngPlayer3Input.text
+						
+						controller.getClickAction = getClickCallback(9);
+						controller.invalidate(true,false,true);
+						eStep0=true;eStep1=true;
+						break ;
+					case 2:
+						ngInfosetsStep.setStyle("icon",ngInfosetsHoverIcon);
+						controller.getClickAction = getClickCallback(5);
+						eStep0=true;eStep1=true;eStep2=true;
+						break ;
+					case 3:
+						ngMovesStep.setStyle("icon",ngMovesHoverIcon);
+						controller.getClickAction = getClickCallback(8);
+						var labeler:AutoLabeller = new AutoLabeller;
+						labeler.autoLabelTree(controller.grid,false);
+						controller.invalidate(true,true,true);
+						eStep0=true;eStep1=true;eStep2=true;eStep3=true;
+						break ;
+					case 4:
+						ngPayoffsStep.setStyle("icon",ngPayoffsHoverIcon);
+						controller.getClickAction = getClickCallback(8);
+						setAutoPayoffs(false);
+						eStep0=true;eStep1=true;eStep2=true;eStep3=true;eStep4=true;
+						break ;
+				} 
+			}
+			
+			/**
+			 * Controlls the Icons of the NEWGUI wether they are enabled or disabled and alpha blended. 
+			 * This depends on the number of childs of the root node or if all nodes (except leaves) have players and chance-players assigned.
+			 *@param value:int current stage of the new GUI
+			 *@author Martin  
+			 */			
+			private function checkExtensiveStep(value:int):void {
+				// value==-1 means no NEWGUI enabled
+				if (value>=0) {
+					ngPlayersStep.alpha=1;
+					ngInfosetsStep.alpha=1;
+					ngMovesStep.alpha=1;
+					ngPayoffsStep.alpha=1;
+	
+					ngPlayersStep.enabled=true;
+					ngInfosetsStep.enabled=true;
+					ngMovesStep.enabled=true;
+					ngPayoffsStep.enabled=true;
+					
+					if (controller.grid.treeHasOnlyRoot()){
+							ngPlayersStep.alpha=0.3;
+							ngInfosetsStep.alpha=0.3;
+							ngMovesStep.alpha=0.3;
+							ngPayoffsStep.alpha=0.3;
+							
+							ngPlayersStep.enabled=false;
+							ngInfosetsStep.enabled=false;
+							ngMovesStep.enabled=false;
+							ngPayoffsStep.enabled=false;
+							
+							eStep1=false;
+							eStep2=false;
+							eStep3=false;
+							eStep4=false;
+							
+					}
+	
+					if (controller.grid.treeHasUnsetPlayers()){
+							ngInfosetsStep.alpha=0.3;
+							ngMovesStep.alpha=0.3;
+							ngPayoffsStep.alpha=0.3;
+							
+							ngInfosetsStep.enabled=false;
+							ngMovesStep.enabled=false;
+							ngPayoffsStep.enabled=false;
+
+							eStep2=false;
+							eStep3=false;
+							eStep4=false;
+					}
+					
+					
+				}
+			}
+			
+			/**
+			 * Changes the edit mode of the game.
+			 * <ul>
+			 * <li>0: Extensive form (tree) is editable
+			 * <li>1: Strategic form (matrix) is editable
+			 * </ul>
+			 *@param value:int (0,1) see description
+			 *@return null
+			 *@author Martin  
+			 */	
+			private function changeEditMode(value:int):void
+			{
+				if (value==0) {
+
+					editMode=0;
+					controller.toggleTreeMode(); 
+					setExtensiveStep(0);
+					matrixEditor.setEditable(false);			
+				} else	if (value==1) {
+					//PromptTwoButtons.show(resultFromSwitchStrategic, "If you edit the game in strategic form the game tree form will be reinitialized from the matrix. Do you want to continue?");
+					//resultFromSwitchStrategic();
+					
+					
+					editMode=1;
+					controller.toggleMatrixMode();
+					matrixEditor.setEditable(true);
+					if (controller.isZeroSum) {
+						ngToggleZeroSumStrategic.selected=true;
+						generalMatrix.selected=false;
+						transpoMatrix.selected=false;
+						matrixEditor.changeEvtRadioButton('ZG')
+					} else {
+						ngToggleZeroSumStrategic.selected=false;
+						generalMatrix.selected=true;
+						transpoMatrix.selected=false;
+						matrixEditor.changeEvtRadioButton('2G')
+					}
+					
+				}
+			}
+			
+			
+			/**
+			 * Callback function of the HTTPServlet. It opens the result window after an algorithm or 
+			 * the estimation time of an algorithm is called, displays the result depending or asked the user if he wants ro proceed if the 
+			 * compuation time takes longer than 30 seconds.  
+			 *@param text:String The result from the HTTPServlet
+			 *@author Martin  
+			 */
+			private function showOutput(text:String):void {
+				
+				var i:int=text.indexOf("STEP");
+				if (i!= -1){
+					i=text.indexOf("Estimation:");
+					var seconds:String=text.substring(i+11,text.indexOf("MaxSeconds:"))
+						
+					seconds.replace( /^([\s|\t|\n]+)?(.*)([\s|\t|\n]+)?$/gm, "" );
+					
+					i=text.indexOf("MaxSeconds:");	
+					var maxSeconds:String=text.substring(i+11,text.length)
+						
+					maxSeconds.replace( /^([\s|\t|\n]+)?(.*)([\s|\t|\n]+)?$/gm, "" );
+					
+					if (seconds=="") {
+						seconds="0";
+					}
+					
+					if (Number(seconds)<30) {
+						runAlgorithm(1);
+						
+					} else if (Number(seconds)>Number(maxSeconds)) {
+						var s1:String="This process will take approx. "+Number(seconds)+" seconds, but the server allows only a computation time of "+Number(maxSeconds)+" seconds. Your request is denied.";
+						Alert.show(s1,'Execute algorithm');
+					} else {
+						var s:String="This process will take approx. "+Number(seconds)+" seconds ("+Math.round(Number(seconds)/60)+" minutes). Do you want to wait?"
+						PromptTwoButtons.show(resultFromHTTPService,s );
+					}
+					
+				} else {
+				
+					if (ExternalInterface.available && !settings.getValue(SCodes.DISPLAY_OUTPUT_INTERNALLY) as Boolean) {
+						ExternalInterface.call('writeSolution', text);
+						log.add(Log.HINT, "You don't see the output? Then you must allow popups " +
+							"in your browser. Don't forget to save your changes before. Or you could " +
+							"activate the 'Display output internally' setting in the Settings panel.");
+					}
+					else {
+						PopUpManager.addPopUp(intOutputWindow, this, false);
+						intOutputWindow.setText(text);
+						PopUpManager.centerPopUp(intOutputWindow);
+					}
+				}
+			}
+
+			/**
+			 * Populates from the external html container's params the list of algos
+			*/
+			private function initVars():void 
+			{			
+				// FOR TESTING ONLY... comment this and uncomment one below before building for prod
+				//var flashvars:Object = {
+				//	menum: "label=Lrs Find All Eq;toolTip=Lrs Find All Equilibria;type=nf;url=http://localhost:8888/matrix/",
+				//	msolve: "label=Lemke Find Eq;toolTip=Lemke Find One Equilibrium;type=nf;url=http://localhost:8888/matrix/",   
+				//	xsolve: "label=Lemke Find Eq;toolTip=Lemke Find One Equilibrium (Sequence Form);type=xf;url=http://localhost:8888/tree/"
+				//};
+				var flashvars:Object = FlexGlobals.topLevelApplication.parameters;
+				for (var param:String in flashvars) {
+					if (param == "seed") {
+						seed = StringUtil.trim(flashvars[param]);
+					} else {
+						var pvalue:String = StringUtil.trim(flashvars[param]);				
+						var o:Object = new Object();
+						o.uid = param;
+						
+						for each (var pair:String in pvalue.split(";")) {
+							var keyvalue:Array = pair.split("=");
+							var key:String = StringUtil.trim(keyvalue[0]);
+							var value:String = StringUtil.trim(keyvalue[1]);
+							o[key] = value;
+						}
+						o.service = httpService;
+						
+						if (o["type"] == "nf") {
+							nfalgos.push(o);
+						} else if (o["type"] == "xf") {
+							xfalgos.push(o);
+						} 
+					}
+				}
+			}
+			
+			/**
+			 * Pops up the settings edition window
+			 */
+			private function showSettings():void
+			{
+				var s:Settings = new Settings();
+				s.controller = controller;
+				PopUpManager.addPopUp(s, this, false);
+				PopUpManager.centerPopUp(s);
+			}				
+			
+			
+			/**
+			 * Checks the expand setting, and updates the 'expanded' var & the webcontainer accordingly
+			 */
+			private function updateExpandStatus():void 
+			{
+				//expanded = settings.getValue(SCodes.EXPANDED) as Boolean;
+				ExternalInterface.call("expand", true);
+				updateLogLineDimensions();
+			}
+
+			/**
+			 * Should be called from the expand button, and changes the expand status, updating everything
+			 */
+			private function switchExpandStatus():void 
+			{
+				expanded = !expanded;
+				settings.setValue(SCodes.EXPANDED, expanded);
+				settings.saveCookiesIfPossible();
+				ExternalInterface.call("expand", expanded);
+				updateLogLineDimensions();
+			}
+			
+			/**
+			 * Return the action corresponding to the button pressed in opModeBar2
+			 */
+			private function getClickCallback(idx:int):Function 
+			{
+				if(controller.treeMode)
+				{
+					//log.add(Log.HINT,canvas.height +"x"+ canvas.width+"-"+scrollbarEF.height+"x"+scrollbarEF.width);
+					//First disable pan tool if it is running
+					if(mouseScrollingEnabled)
+						disableMouseScrolling();
+					
+					switch (idx) {
+						case 0: return actions.addChildIset;
+						case 1: return actions.addChild;
+						case 2: return actions.deleteNode;
+						case 3: return actions.cutIset;
+						case 4: return actions.dissolveIset;
+						case 5: return actions.mergeIsets;	
+						case 6: return actions.changePlayer;							
+						case 7: return actions.makeChance;	
+						case 8: return actions.nullAction;
+						case 9: return actions.setPlayer;	
+					}
+					log.add(Log.ERROR_THROW, "callback for index " + idx + " not found");
+				} return null;
+			}
+			
+		
+					
+		
+			
+			
+			/**
+			 * Sets tab selecttion to the current controller state
+			 */
+			private function updateSelectedTab(evt:Event):void
+			{
+				tabNavigator.selectedIndex = controller.currentState;
+			}
+			
+			/**
+			 * This function runs when tabs are changed
+			 */
+			private function tabChange(event:IndexChangedEvent):void
+			{		
+				//Align editmode and trree/matrixMode after a file has been loaded
+				if ((controller.matrixMode) && (editMode!=1)) {
+					changeEditMode(1);
+				} else if ((controller.treeMode) && (editMode!=0)) {
+					changeEditMode(0);
+				}
+				
+				
+				if ((event.oldIndex==1) && (event.newIndex!=1)) {
+					matrixEditor.saveChanges();
+				}
+				
+		
+				//Set canvas
+				if (event.target.selectedIndex == 0) {
+					controller.canvas =  canvas;
+					arrowMenu.visible=true;
+				} else if (event.target.selectedIndex == 2) {
+					arrowMenu.visible=false;
+					controller.canvas =  canvasNF;
+					
+				} else if (event.target.selectedIndex ==1 ){
+			
+					arrowMenu.visible=false;
+					if (editMode==0) {
+						matrixEditor.init();
+						matrix.populateFromTree();
+						matrixEditor.matrix = matrix;
+						matrixEditor.controller = controller;
+						matrixEditor.setMode(grid.isZeroSum);				
+						matrixEditor.setEditable(false);
+					} else if (editMode==1) {
+						matrixEditor.setEditable(true);
+					}
+				}
+				
+				//Set list of algorithms
+				algos.source = event.target.selectedIndex == 0 ? xfalgos : nfalgos; 
+				algoComboBox.selectedIndex = 0;			
+				
+				//De/Activate mousescrolling on the new tab according to the selected setting
+				if(event.target.selectedIndex == 0)	{
+					if(mouseScrollingEnabled) scrollbarEF.enableMouseScrolling();
+					else scrollbarEF.disableMouseScrolling();
+				} else if(event.target.selectedIndex == 2) {
+					if(mouseScrollingEnabled) scrollbarSF.enableMouseScrolling();
+							else scrollbarSF.disableMouseScrolling();
+				}
+				
+				
+				
+			}
+			
+			/**
+			 * Sets the ZeroSum Icon in the toolbar
+			 *@author Martin
+			 */
+			private function toggleZeroSum():void {
+				if (controller.isZeroSum) { 
+					toggleZeroSumButton.setStyle("icon",zeroSumIcon);
+					ngToggleZeroSum.setStyle("icon",zeroSumIcon);
+					ngToggleZeroSumStrategic.setStyle("icon",zeroSumIcon);
+					
+					if (editMode==1) {
+						matrixEditor.changeEvtRadioButton('ZG');
+					}
+				} else {
+					toggleZeroSumButton.setStyle("icon",nzeroSumIcon);
+					ngToggleZeroSum.setStyle("icon",nzeroSumIcon);
+					ngToggleZeroSumStrategic.setStyle("icon",zeroSumIcon);
+				}
+				
+			}
+			
+			/**
+			 * Sets the ZeroSum Icon in the toolbar
+			 *@author Martin
+			 */
+			private function toggleDecimalLayout():void {
+				if (decimalLayout) {
+					settings.setValue("SYSTEM_DECIMAL_LAYOUT",true);
+					toggleDecimalLayoutButton.setStyle("icon",decimalIcon);
+				} else {
+					settings.setValue("SYSTEM_DECIMAL_LAYOUT",false);
+					toggleDecimalLayoutButton.setStyle("icon",rationalIcon);
+				}
+				controller.invalidate(true,false,true);
+				if ((editMode==1) || (tabNavigator.selectedIndex==1)) {
+					matrixEditor.alignStrategy();
+				}
+			}			
+			
+			
+			//CMP: NEED TO UPDATE THIS TO WORK FOR P3
+			
+			/**
+			 * Controlls mouse clicks on the canvas area and makes apropriate action calls.
+			 *@author Martin  
+			 */
+			private function handleClickOnCanvas():void
+			{
+				if(!mouseScrollingEnabled){
+					//TODO #32 Handle click differently depending on the mode
+					if ((extensiveStep!=3) && (extensiveStep!=4)) {
+						//Check mode
+						if (!controller.matrixMode){
+							if (extensiveStep==1) {
+								var al:AutoLabeller = new AutoLabeller();
+								if (ngPlayer1.selected){
+									controller.getClickAction = getClickCallback(9);
+									controller.doActionAtWithPlayer(canvas.mouseX, canvas.mouseY,grid.firstPlayer);
+								} else if (ngPlayer2.selected){
+									controller.getClickAction = getClickCallback(9);
+									controller.doActionAtWithPlayer(canvas.mouseX, canvas.mouseY,grid.firstPlayer.nextPlayer);
+								} 
+								//cmp
+								else if (ngPlayer3.selected){
+									controller.getClickAction = getClickCallback(9);
+									controller.doActionAtWithPlayer(canvas.mouseX, canvas.mouseY,grid.firstPlayer.nextPlayer.nextPlayer);
+								} else if (ngChance.selected) {
+									controller.getClickAction = getClickCallback(7);
+									controller.doActionAt(canvas.mouseX, canvas.mouseY);
+								}
+							} else if (extensiveStep==0) {
+								if (ngTreeAdd.selected){
+									controller.getClickAction = getClickCallback(1);
+									controller.doActionAt(canvas.mouseX, canvas.mouseY);
+								} else if (ngTreeDelete.selected){
+									controller.getClickAction = getClickCallback(2);
+									controller.doActionAt(canvas.mouseX, canvas.mouseY);
+								}
+							} else if (extensiveStep==2) {
+								if (ngInfosetsJoin.selected){
+									controller.getClickAction = getClickCallback(5);
+									controller.doActionAt(canvas.mouseX, canvas.mouseY);
+								} else if (ngInfosetsDisjoin.selected){
+									controller.getClickAction = getClickCallback(4);
+									controller.doActionAt(canvas.mouseX, canvas.mouseY);
+								} else if (ngInfosetsCut.selected){
+									controller.getClickAction = getClickCallback(3);
+									controller.doActionAt(canvas.mouseX, canvas.mouseY);
+								} 
+							} else {
+								controller.doActionAt(canvas.mouseX, canvas.mouseY);
+							}
+							
+							checkExtensiveStep(extensiveStep);
+						}
+					}
+					else {
+						//Check mode
+						//if (!controller.treeMode){
+						treePainter.selectAndEdit(controller, canvas.mouseX, canvas.mouseY);
+						/*
+						if (controller.treeMode) {
+							if (ngMovesPlayer1.selected) {
+								readMovesfromTree(controller.grid.firstPlayer);	
+							} else if (ngMovesPlayer2.selected) {
+								readMovesfromTree(controller.grid.firstPlayer.nextPlayer);
+							}
+							controller.invalidate(true, false, true);
+						}*/
+						//}
+					}
+						
+				}
+			}
+			
+
+			
+			/**
+			 * Enables scrolling by dragging the canvas, disabling all other click actions on it
+			 */
+			private function enableMouseScrolling():void {
+				var tab:String = tabNavigator.selectedChild.label;
+				
+				if(tab == "Extensive Form")
+					scrollbarEF.enableMouseScrolling();
+				else if(tab == "Matrix layout")
+				scrollbarSF.enableMouseScrolling();
+				
+				mouseScrollingEnabled = true;
+			}
+			
+			/**
+			 * Disables scrolling by dragging the canvas, enabling all other click actions on it
+			 */
+			private function disableMouseScrolling():void {
+				var tab:String = tabNavigator.selectedChild.label;
+				
+				if(tab == "Extensive Form")
+					scrollbarEF.disableMouseScrolling();
+				else if(tab == "Matrix Layout")
+				scrollbarSF.disableMouseScrolling();
+				
+				mouseScrollingEnabled = false;
+			}
+			
+			
+			
+			/* <--- --- LOGLINE-RELATED FUNCTIONS --- ---> */
+			
+			//Registers a listener for HINTs added to Log, which will call updateHint
+			private function initLogLineListener():void
+			{
+				eventManager.addEventListener(EvCodes.HINT_ADDED, updateLogLine);
+			}
+			
+			private var lastLogLineTimeoutId:int = -1;
+			
+			//Updates the LogLine with the text from a HINT event
+			private function updateLogLine(evt:TextEvent):void
+			{
+				logLine.text = evt.text;
+				if(lastLogLineTimeoutId != -1)
+					clearTimeout(lastLogLineTimeoutId);
+				
+				var optimalMsForReading:int = Math.max(3000, evt.text.length*67); 
+				//These ms are calculated from average lowest reading speed in english (200 wpm)
+				//and average of letters per word in english (4.5), plus a source of extra
+				//time: counting the non-letter characters as letters
+				
+				lastLogLineTimeoutId = setTimeout(clearLogLine, optimalMsForReading);
+			}
+			
+			//Changes the dimensions according to the expanded status
+			private function updateLogLineDimensions():void
+			{
+				if(expanded)
+				{
+					logLineContainer.left = 1;
+					logLineContainer.right = 1;
+				} else
+				{
+					logLineContainer.left = 0;
+					logLineContainer.right = 0;
+				}
+			}
+			
+			//Erases the logLine text
+			private function clearLogLine():void {
+				lastLogLineTimeoutId = -1;
+				logLine.text = "";
+			}
+			
+			
+			
+			/* <--- --- KEYBOARD EVENT HANDLERS --- ---> */
+			
+			//Shortcuts when key is pressed
+			protected function sc_keyDownHandler(event:KeyboardEvent):void
+			{			
+				switch(event.keyCode)
+				{
+					case Keyboard.SPACE:
+						enableMouseScrolling();
+						break;
+				}
+				
+			}
+			
+			//Shortcuts when key is released
+			protected function sc_keyUpHandler(event:KeyboardEvent):void
+			{
+				var ctrl:Boolean = event.ctrlKey;
+				var shift:Boolean = event.shiftKey;
+				
+				switch(event.keyCode)
+				{
+					case Keyboard.SPACE:
+						disableMouseScrolling();
+						break;
+					case 67: //'c'
+						if(ctrl) PromptTwoButtons.show(clearDependingOnPromptResult, "Are you really sure you want to clear the game?");
+						break;
+					case 76: //'l'
+						if(ctrl) controller.zoomAdjust();
+						else {
+							if(shift) controller.zoomIn();
+							else controller.zoomOut();
+						}
+								
+						break;						
+					case 79: //'o'
+						if(ctrl) controller.open();
+						break;
+					case 83: //'s'
+						if (tabNavigator.selectedIndex==1) {
+							matrixEditor.saveChanges();
+						}
+						if(ctrl) controller.save();
+						break;
+					case 82: //'r'
+						if(ctrl) runAlgorithm(0);
+						break;
+					case 90: //'z'
+						if(ctrl) 
+						{
+							if(shift)
+								controller.redo();
+							else
+								controller.undo();
+						}
+						break;
+				}
+			}
+			
+			
+			/**
+			 * Runs the algorithm selected in the ddlb
+			 *@see autoLabelMovesAction
+			 *@author Martin  
+			 */
+			private function runAlgorithm(m:int):void {
+				var a:Object=algoComboBox.selectedItem;
+				var s:String=seed;
+				if (tabNavigator.selectedIndex==1) {
+					matrixEditor.saveChanges();
+				}
+				if (m==0) {
+					//Run the Algo for the first time to estimate the process time
+					if (a.es=="1") {
+						//First run the estimation
+						controller.runAlgorithm(a, s);
+						//showOutput() will handle the process and asks the user, if he wants to continue.
+						
+					} else {
+						controller.runAlgorithm(a, s);
+					}
+				} else if (m==1){
+					//After estimation completes and user wants to continue, process the algo without estimation.
+					a.es="0";
+					controller.runAlgorithm(a, s);
+					a.es="1";
+				}
+			}
+			
+			/**
+			 * Handels Enter and ESC events if the user changes the player 1 name
+			 *@author Martin  
+			 */
+			private function keyDownNGPlayer1(event:KeyboardEvent):void{
+				if (event.keyCode==Keyboard.ENTER) {
+					controller.setPlayerName(controller.grid.firstPlayer,ngPlayer1Input.text);
+					_player1Name=ngPlayer1Input.text;
+				} else if (event.keyCode==Keyboard.ESCAPE) {
+					ngPlayer1Input.text=controller.grid.firstPlayer.name;
+				}
+			}
+			/**
+			 * Handels Enter and ESC events if the user changes the player 2 name
+			 *@author Martin  
+			 */
+
+			private function keyDownNGPlayer2(event:KeyboardEvent):void{
+				if (event.keyCode==Keyboard.ENTER) {
+					controller.setPlayerName(controller.grid.firstPlayer.nextPlayer,ngPlayer2Input.text);
+					_player2Name=ngPlayer2Input.text;
+				} else if (event.keyCode==Keyboard.ESCAPE) {
+					ngPlayer2Input.text=controller.grid.firstPlayer.nextPlayer.name;
+				}
+			}
+			
+			//CMP. Next step: actually make this do something. Need to edit firstPlayer/nextPlayer convention. 
+			
+			private function keyDownNGPlayer3(event:KeyboardEvent):void{
+				if (event.keyCode==Keyboard.ENTER) {
+					controller.setPlayerName(controller.grid.firstPlayer.nextPlayer.nextPlayer,ngPlayer3Input.text);
+					_player3Name=ngPlayer3Input.text;
+				} else if (event.keyCode==Keyboard.ESCAPE) {
+					ngPlayer3Input.text=controller.grid.firstPlayer.nextPlayer.nextPlayer.name;
+				}
+			}
+			
+
+			/**
+			 * Handels focus loose event if the user changes the player 1 name
+			 *@author Martin  
+			 */
+			private function focusOutNGPlayer1(eventObj:Event):void {
+				controller.setPlayerName(controller.grid.firstPlayer,ngPlayer1Input.text);
+				_player1Name=ngPlayer1Input.text;
+			}
+			
+			/**
+			 * Handels focus loose event if the user changes the player 2 name
+			 *@author Martin  
+			 */
+			private function focusOutNGPlayer2(eventObj:Event):void {
+				controller.setPlayerName(controller.grid.firstPlayer.nextPlayer,ngPlayer2Input.text);
+				_player2Name=ngPlayer2Input.text;
+			}
+			
+			//CMP. 
+			
+			private function focusOutNGPlayer3(eventObj:Event):void {
+				controller.setPlayerName(controller.grid.firstPlayer.nextPlayer.nextPlayer,ngPlayer3Input.text);
+				_player3Name=ngPlayer3Input.text;
+			}
+			
+			
+			/**
+			 * Sets payoffs automaticalls. If reset==true it overrides the payoffs else it only assigns payoffs to unset leaves.
+			 *@param reset:Boolean
+			 *@author Martin  
+			 */
+			private function setAutoPayoffs(reset:Boolean):void {
+				controller.grid.setPlayerPayoffsAuto(controller.isZeroSum,controller.grid.firstPlayer,reset);
+				controller.invalidate(true,false,true);
+			}
+
+			/**
+			 * Asks, if you want to override your move labels with autolabelling
+			 *@author Martin  
+			 */
+			private function autoLabelMovesAction():void{
+				
+				PromptTwoButtons.show(resultFromAutoLabelMoves, "Autolabeling will override all customized move labels. Do you want to continue?");
+			}
+			
+			/**
+			 * Callback function from the Popup that appears if you cange Player moves on the canvas
+			 *@author Martin  
+			 */
+			private function onReturnFromPromptMoves():void
+			{
+				if(PromptTextInputCanvas.lastEnteredText!=null && PromptTextInputCanvas.lastEnteredText!="")
+				{
+					if (ngMovesPlayer==1) {
+						controller.grid.setPlayerMoves(controller.grid.firstPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
+					} 
+					else if (ngMovesPlayer==2) 
+					{
+						controller.grid.setPlayerMoves(controller.grid.firstPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
+					} 
+					//CMP: Update moves for P3
+					else if (ngMovesPlayer==3) 
+					{
+						controller.grid.setPlayerMoves(controller.grid.firstPlayer.nextPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
+					} 
+					controller.invalidate(true, false, true);
+				}
+			}
+		
+			/**
+			 * Callback function from the Popup that appears if you cange Player payoffs on the canvas
+			 *@author Martin  
+			 */
+			private function onReturnFromPromptPayoffs():void
+			{
+				//CMP: Functionality for changing payoffs for P3 added. 
+				if(PromptTextInputCanvas.lastEnteredText!=null && PromptTextInputCanvas.lastEnteredText!="")
+				{
+					if (ngPayoffsPlayer==1) 
+					{
+						controller.grid.setPlayerPayoffs(controller.grid.firstPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
+					} 
+					else if (ngPayoffsPlayer==2) 
+					{
+						controller.grid.setPlayerPayoffs(controller.grid.firstPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
+					} 
+					else if (ngPayoffsPlayer==3) 
+					{
+						controller.grid.setPlayerPayoffs(controller.grid.firstPlayer.nextPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
+					} 
+					controller.invalidate(true, false, true);
+				}
+			}
+			
+			
+
+			/**
+			 * Callback function from the Popup that appears if click on Autolabelling.
+			 *@see autoLabelMovesAction
+			 *@author Martin  
+			 */
+			private function resultFromAutoLabelMoves():void {
+				if(PromptTwoButtons.buttonPressed == PromptTwoButtons.OK) {
+					controller.doAction(actions.autoLabelMoves);
+				}
+			}
+			
+			/**
+			 * Callback function from the Popup that appears if you switch from extensive form to strategic form and you want to edit the strategic form.
+			 *@see changeEditMode
+			 *@author Martin  
+			 */	
+			private function resultFromSwitchStrategic():void {
+				//if(PromptTwoButtons.buttonPressed == PromptTwoButtons.OK) {
+					editMode=1;
+					controller.toggleMatrixMode();
+					matrixEditor.setEditable(true);
+					if (controller.isZeroSum) {
+						ngToggleZeroSumStrategic.selected=true;
+						generalMatrix.selected=false;
+						transpoMatrix.selected=false;
+						matrixEditor.changeEvtRadioButton('ZG')
+					} else {
+						ngToggleZeroSumStrategic.selected=false;
+						generalMatrix.selected=true;
+						transpoMatrix.selected=false;
+						matrixEditor.changeEvtRadioButton('2G')
+					}
+				//}
+			}
+			
+			/**
+			 * Callback function from the Popup that appears if you create a new game
+			 *@author Martin  
+			 */	
+			private function clearDependingOnPromptResult():void
+			{
+				if(PromptTwoButtons.buttonPressed == PromptTwoButtons.OK)
+				{
+					if(mouseScrollingEnabled) {
+						disableMouseScrolling();
+					}
+					if (controller.treeMode) {
+						
+						controller.clear();
+						resetNewGUI();
+						//Set it again, to update the step buttons (arrows)
+						setExtensiveStep(0);
+					} else {
+						controller.clear();
+						matrixEditor.init();
+						matrixEditor.matrix = matrix;
+						resetNewGUI();
+					}
+				}
+			}
+			
+			/**
+			 * Callback function from the Popup that appears if the calculation (estimation) of the native algorithm takes a long time and 
+			 * the user is asked wether toproceeed or stop.
+			 *@author Martin  
+			 */	
+			private function resultFromHTTPService():void {
+				if(PromptTwoButtons.buttonPressed == PromptTwoButtons.OK) {
+					runAlgorithm(1);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		.myButton {
+			cornerRadius:0;
+		}
+		
+		.myButtonSkinless {
+			skin: ClassReference("mx.skins.ProgrammaticSkin");
+			cornerRadius:0;
+		}
+
+		.mxTabLabels {
+			textFieldClass: ClassReference("mx.core.UIFTETextField");
+			fontFamily: Helvetica; 
+			fontSize: 12;
+			fontWeight: bold;			
+		}
+		
+		.mxLabels {
+			fontFamily: Helvetica; 
+			fontSize: 12;
+		}	
+		
+		.mxSmallLabels {
+			textFieldClass: ClassReference("mx.core.UIFTETextField");
+			fontFamily: Helvetica; 
+			fontSize: 10;
+			fontStyle: italic;	
+		}
+	</fx:Style>
+	
+
+	<fx:Declarations>
+		<mx:HTTPService id="httpService"
+						concurrency="single"		 
+						method="POST"		 
+						resultFormat="text"
+						showBusyCursor="true"
+						fault="log.add(Log.ERROR, event.fault.faultCode + ':' + event.fault.faultString + ':' + event.fault.faultDetail)"
+						result="showOutput(event.result as String);"
+						/>
+		<TreeGrid id="grid" xmlns="lse.math.games.builder.viewmodel.*" matrix="{matrix}" />
+		<PainterChain id="treePainter" xmlns="lse.math.games.builder.view.*">
+			<links>
+				<fx:Vector type="lse.math.games.builder.view.IPainter">
+					<TreeGridPainter xmlns="lse.math.games.builder.viewmodel.*" grid="{grid}" controller="{controller}"/>
+					<TreeGridSetPainter xmlns="lse.math.games.builder.viewmodel.*" grid="{grid}" />
+				</fx:Vector>
+			</links>
+		</PainterChain>
+		<model:StrategicForm id="matrix" grid="{grid}"/>
+		<MatrixPainter id="matrixPainter" xmlns="lse.math.games.builder.viewmodel.*" matrix="{matrix}" />
+		<TreeGridActionFactory id="actions" xmlns="lse.math.games.builder.viewmodel.*" />		
+		<Presenter id="controller" xmlns="lse.math.games.builder.presenter.*" grid="{grid}" matrix="{matrix}" getDataUpdateAction="actions.outcomeDataUpdate" />
+		<OutputWindow id="intOutputWindow" xmlns="lse.math.games.builder.view.*" skinClass="lse.math.games.builder.view.OutputWindowSkin" />
+		
+		
+		
+		<mx:Sequence id="bounceEffect" repeatCount="1">
+			<mx:Move duration="2000" yBy="100" easingFunction="{Bounce.easeOut}"/>
+		</mx:Sequence>
+	</fx:Declarations>
+
+
+	<!-- START OF THE LAYOUT -->
+
+	<s:Group left="0" right="0" top="0" bottom="0" >
+		
+		<!-- TOP CONTROL BAR -->		
+
+		<!-- // File operations -->
+
+		<s:HGroup left="{expanded ? 3 : 0}" height="{menuBarHeight}" top="0" paddingTop="3" gap="-1" right="0" clipAndEnableScrolling="true" keyDown="sc_keyDownHandler(event)" keyUp="sc_keyUpHandler(event)" verticalAlign="middle">
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/page_white.png')" toolTip="Clear [Ctrl+c]" click="PromptTwoButtons.show(clearDependingOnPromptResult, 'Are you really sure you want to clear the game?');" />
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/folder_page.png')" toolTip="Open [Ctrl+o]" click="controller.open()" />	
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/page_save.png')" toolTip="Save [Ctrl+s]" click="controller.save()" />	
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/page_white_picture.png')" toolTip="Export As PNG File" click="controller.image()" />			
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/page_white_vector.png')" toolTip="Export As FIG File" click="controller.fig()" />
+
+			<mx:TextInput  id="filename" width="100" height="{buttonHeight1}" enabled="false" added="fileManager = controller.fileManager;"
+						  click="filename.enabled=true;" focusOut="filename.enabled=false; if(filename.text.length>0) fileManager.filename= filename.text; else filename.text = fileManager.filename" 
+						  text="{fileManager.filename}" keyUp="if(event.keyCode == Keyboard.ENTER) controller.canvas.setFocus(); event.stopPropagation()" keyDown="event.stopPropagation()" 
+						  borderVisible="false" color="#EEEEEE" contentBackgroundColor="#B6BABD" disabledColor="#000000"/>
+
+			<mx:Spacer width="{preUndoButtonsSpacer}"/>
+			
+            <!--  // Disable UNDO and REDO buttons
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/arrow_undo.png')" toolTip="Undo [Ctrl+z]" 
+					   click="controller.undo()" />
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/arrow_redo.png')" toolTip="Redo [Ctrl+Shift+z]" 
+					   click="controller.redo()" />				
+            -->
+            <!-- // Replace UNDO and REDO buttons with spacer -->
+
+			<mx:Spacer width="{undoButtonsReplaceSpacer}"/>	
+
+			<mx:Spacer width="{treeStepSpacer}"/>	
+
+			<s:HGroup id="arrowMenu" >
+			<s:HGroup gap="-2" visible="{extensiveStep>=0}"  includeInLayout="{extensiveStep>=0}" enabled="{editMode==0}">
+
+				<mx:Button id="ngTreeStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngTreeIcon}" overIcon="{ngTreeHoverIcon}" toolTip="Add and delete tree node" click="setExtensiveStep(0);" />
+				<mx:Spacer width="{playersStepSpacer}"/>	
+				
+				<!-- //CMP: Added extra player button, so re-aligned top bar. Temporary until new implementation. -->
+				<mx:Spacer width="{buttonWidth1}"/>	
+
+				<mx:Button id="ngPlayersStep" styleName="myButtonSkinless" alpha="0.3" width="{arrowWidth}" height="{arrowHeight}" icon="{ngPlayersIcon}" overIcon="{ngPlayersHoverIcon}" toolTip="Assign players to tree nodes" click="setExtensiveStep(1);" />	
+				<mx:Spacer width="{infosetsStepSpacer}"/>	
+
+				<mx:Button id="ngInfosetsStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngInfosetsIcon}" overIcon="{ngInfosetsHoverIcon}" toolTip="Merge node to infosets and disolve/cut infosets" click="setExtensiveStep(2);" />	
+				<mx:Spacer width="{movesStepSpacer}"/>	
+				
+				<!-- //CMP: Added extra player button, so re-aligned top bar. Temporary until new implementation. -->
+				<mx:Spacer width="{buttonWidth1}"/>	
+
+				<mx:Button id="ngMovesStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngMovesIcon}" overIcon="{ngMovesHoverIcon}" toolTip="Assign move labels to tree edges" click="setExtensiveStep(3);" />
+				<mx:Spacer width="{payoffsStepSpacer}"/>	
+				
+				<!-- //CMP: Added extra player button, so re-aligned top bar. Temporary until new implementation. -->
+				<mx:Spacer width="{buttonWidth1}"/>	
+
+				<mx:Button id="ngPayoffsStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngPayoffsIcon}" overIcon="{ngPayoffsHoverIcon}" toolTip="Assign player payoffs to leafs" click="setExtensiveStep(4);" />
+			</s:HGroup>
+			</s:HGroup>
+
+			<mx:Spacer width="{postPayoffsStepSpacer}"/>	
+
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/cog_go.png')" toolTip="Run [Ctrl+r]" click="runAlgorithm(0)" />			
+			<mx:Spacer width="{cogButtonSpacer}"/>
+			<s:ComboBox id="algoComboBox" width="{algoComboBoxWidth}" height="{buttonHeight1}" toolTip="Select Algorithm" fontFamily="Helvetica" preinitialize="initVars();" selectedIndex="0">
+				<s:dataProvider>
+					<mx:ArrayCollection id="algos" source="{xfalgos}" />					
+				</s:dataProvider>
+				<s:itemRenderer>
+					<fx:Component>
+						<s:ItemRenderer>							
+							<s:Label left="5" height="22" width="92" maxDisplayedLines="1" verticalAlign="middle" toolTip="{data.toolTip}" text="{data.label}" />
+						</s:ItemRenderer>						
+					</fx:Component>					
+				</s:itemRenderer> 
+			</s:ComboBox>
+
+			<mx:Spacer width="{postPayoffsStepSpacer}"/>	
+			
+			<s:HGroup  visible="{editMode==0}" verticalAlign="middle" includeInLayout="{editMode==0}">
+				<s:HGroup  visible="{extensiveStep==-1}" verticalAlign="middle" includeInLayout="{extensiveStep==-1}">
+					<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/wand.png')" toolTip="Generate Random Payoffs" 
+							   click="controller.doAction(actions.randomPayoffs)" />
+					<mx:Button id="toggleZeroSumButton" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/zerosum.png')" toolTip="Zero Sum {controller.isZeroSum ? 'ON' : 'OFF'}" 
+							   toggle="true" selected="{controller.isZeroSum}" change="controller.isZeroSum = event.target.selected;toggleZeroSum();"  overIcon="@Embed(source='../../../../../../assets/icons/nzerosum.png')"/>
+				</s:HGroup>
+			</s:HGroup>
+			
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/zoom_in.png')" toolTip="Zoom In [Shift+l]" 
+					   click="controller.zoomIn()" />
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/zoom_out.png')" toolTip="Zoom Out [l]" 
+					   click="controller.zoomOut()" />
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/zoom.png')" toolTip="Adjust Zoom [Ctrl+l]" 
+					   click="controller.zoomAdjust()" />				
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/pan_tool.png')" toolTip="Pan Tool {scrollbarSF.mouseScrollingEnabled ? 'ON' : 'OFF'} [Hold SpaceBar]" 
+					   toggle="true" selected="{mouseScrollingEnabled}" change="if(mouseScrollingEnabled) disableMouseScrolling(); else enableMouseScrolling()" />
+			
+			<mx:Button id="toggleDecimalLayoutButton" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/rational.png')" toolTip="Decimal Layout {decimalLayout ? 'ON' : 'OFF'}" 
+					   toggle="true" selected="{decimalLayout}" change="decimalLayout = event.target.selected;toggleDecimalLayout();" />
+			<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight1}" icon="@Embed(source='../../../../../../assets/icons/cog_edit.png')" toolTip="Edit Settings" 
+					   click="showSettings()"/>		
+
+		</s:HGroup>
+	
+		<!-- TABS -->
+		<s:BorderContainer top="{menuBarHeight}" bottom="{bottomMargin}" left="0" right="{leaves.visible ? 185 : 0}" backgroundColor="0xe0e0e0" backgroundAlpha="1" borderColor="0x808080" keyDown="sc_keyDownHandler(event)" keyUp="sc_keyUpHandler(event)">
+			<mx:TabNavigator id="tabNavigator" tabHeight="{tabHeight}" top="3" bottom="-1" left="-1" right="-1" depth="2"  tabOffset="5" paddingTop="0" backgroundColor="0xffffff" tabStyleName="mxTabLabels" 
+							 change="tabChange(event)" creationPolicy="all">
+				<s:NavigatorContent label="Extensive Form" >
+					
+					<s:HGroup  gap="-1" left="340" right="0" top="-{buttonHeight2}" depth="3" verticalAlign="middle" clipAndEnableScrolling="true" enabled="{editMode==0}" >
+						
+						<mx:Spacer width="{treeStepSpacerButtons}"/>	
+
+						<s:HGroup  enabled="{eStep0}" verticalAlign="middle" gap="-1" >
+							<!-- Tree Step-->
+							<mx:Button id="ngTreeAdd" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/add.png')"  
+									   toggle="true" selected="true" click="setExtensiveStep(0);ngTreeAdd.selected=true;ngTreeDelete.selected=false;"  toolTip="ADD a child node by clicking on a black square" />
+							<mx:Button id="ngTreeDelete" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/delete.png')"  
+									   toggle="true" selected="false" click="setExtensiveStep(0);ngTreeDelete.selected=true;ngTreeAdd.selected=false;"  toolTip="DELETE a node by clicking on a black squaree" />
+						</s:HGroup>
+
+						<mx:Spacer width="{playersStepSpacerButtons}"/>	
+						
+						<s:HGroup  enabled="{eStep1}" verticalAlign="middle" gap="-1" >
+							<mx:Button id="ngChance" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/tumbling_dice.png')"  
+									   toggle="true" selected="false" click="setExtensiveStep(1);ngChance.selected=true;ngPlayer1.selected=false;ngPlayer2.selected=false;Player1InputVisible=false;Player2InputVisible=false;"
+									   toolTip="Assign CHANCE by clicking on a node"/>
+									   
+									   
+							<mx:Button id="ngPlayer1" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/user_1.png')" 
+									   toggle="true" selected="true" click="setExtensiveStep(1);ngPlayer1.selected=true;ngChance.selected=false;ngPlayer2.selected=false;ngPlayer3.selected=false;Player1InputVisible=true;Player2InputVisible=false;Player3InputVisible=false;" 
+									   toolTip="Assign PLAYER 1 by clicking on a node"/>
+									   
+									   
+							<mx:Button id="ngPlayer2" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/user_2.png')" 
+									   toggle="true" selected="false" click="setExtensiveStep(1);ngPlayer2.selected=true;ngPlayer1.selected=false;ngPlayer3.selected=false;ngChance.selected=false;Player1InputVisible=false;Player2InputVisible=true;Player3InputVisible=false;" 
+									   toolTip="Assign PLAYER 2 by clicking on a node" />
+									   
+							<!-- // CMP -->
+							<mx:Button id="ngPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/user_3.png')" 
+									   toggle="true" selected="false" 
+									   click="setExtensiveStep(1);ngPlayer3.selected=true;ngPlayer1.selected=false;ngPlayer2.selected=false;ngChance.selected=false;Player1InputVisible=false;Player2InputVisible=false;Player3InputVisible=true;" 
+									   toolTip="Assign PLAYER 3 by clicking on a node" />
+									   
+									   
+						</s:HGroup>
+
+						<mx:Spacer width="{infosetsStepSpacerButtons}"/>	
+
+						<s:HGroup  enabled="{eStep2}" verticalAlign="middle" gap="-1" >
+							<mx:Button id="ngInfosetsJoin" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/link.png')"  
+									   toggle="true" selected="true" click="setExtensiveStep(2);ngInfosetsJoin.selected=true;ngInfosetsCut.selected=false;ngInfosetsDisjoin.selected=false;"
+									   toolTip="Select two or more nodes with the same number of children and the same player to merge them to an infoset"/>
+							<mx:Button id="ngInfosetsDisjoin" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/link_break.png')"  
+									   toggle="true" selected="false" click="setExtensiveStep(2);ngInfosetsDisjoin.selected=true;ngInfosetsCut.selected=false;ngInfosetsJoin.selected=false;" 
+									   toolTip="Select an infoset to disolve it and split it up in seperate infosets"/>
+							<mx:Button id="ngInfosetsCut" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/cut_red.png')"  
+									   toggle="true" selected="false" click="setExtensiveStep(2);ngInfosetsCut.selected=true;ngInfosetsDisjoin.selected=false;ngInfosetsJoin.selected=false;" 
+									   toolTip="Select an infoset to cut a node into a seperate infoset"/>
+						</s:HGroup>
+
+						<mx:Spacer width="{movesStepSpacerButtons}"/>	
+
+						<s:HGroup  enabled="{eStep3}" verticalAlign="middle" gap="-1" >
+							<mx:Button id="ngMovesPlayer1" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/font_1.png')"  
+									   click="setExtensiveStep(3);ngMovesPlayer=1;;PromptTextInputCanvas.show(onReturnFromPromptMoves, controller.grid.getPlayerMoves(controller.grid.firstPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_1_COLOR') as Number);"
+									   toolTip="Assign MOVES to PLAYER 1."/>
+							<mx:Button id="ngMovesPlayer2" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/font_2.png')"  
+									   click="setExtensiveStep(3);ngMovesPlayer=2;;PromptTextInputCanvas.show(onReturnFromPromptMoves, controller.grid.getPlayerMoves(controller.grid.firstPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_2_COLOR') as Number);"
+									   toolTip="Assign MOVES to PLAYER 2."/>
+							
+							<!-- //CMP: -->
+			
+							<mx:Button id="ngMovesPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/font_2.png')"  
+									   click="setExtensiveStep(3);ngMovesPlayer=3;;PromptTextInputCanvas.show(onReturnFromPromptMoves, controller.grid.getPlayerMoves(controller.grid.firstPlayer.nextPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_3_COLOR') as Number);"
+									   toolTip="Assign MOVES to PLAYER 3."/>		   
+							
+							<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/lightbulb.png')"   click="autoLabelMovesAction();" 
+									   toolTip="Assign MOVES automatically to all players"/>
+						</s:HGroup>
+
+						<mx:Spacer width="{payoffsStepSpacerButtons}"/>	
+						
+						<s:HGroup  enabled="{eStep4}" verticalAlign="middle" gap="-1" >
+							<mx:Button id="ngPayoffsPlayer1" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/brick_1.png')"  
+									   click="setExtensiveStep(4);ngPayoffsPlayer=1;;PromptTextInputCanvas.show(onReturnFromPromptPayoffs, controller.grid.getPlayerPayoffs(controller.grid.firstPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_1_COLOR') as Number);"
+									   toolTip="Assign PAYOFFS to PLAYER 1." />
+							<mx:Button id="ngPayoffsPlayer2" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/brick_2.png')"  
+									   click="setExtensiveStep(4);ngPayoffsPlayer=2;PromptTextInputCanvas.show(onReturnFromPromptPayoffs, controller.grid.getPlayerPayoffs(controller.grid.firstPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_2_COLOR') as Number);" 
+									   toolTip="Assign PAYOFFS to PLAYER 2."/>
+									   
+							<!-- //CMP: -->
+							<mx:Button id="ngPayoffsPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/brick_2.png')"  
+									   click="setExtensiveStep(4);ngPayoffsPlayer=3;PromptTextInputCanvas.show(onReturnFromPromptPayoffs, controller.grid.getPlayerPayoffs(controller.grid.firstPlayer.nextPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_3_COLOR') as Number);" 
+									   toolTip="Assign PAYOFFS to PLAYER 3."/>
+									   
+							
+							<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/wand.png')"   
+									   click="setExtensiveStep(4);controller.doAction(actions.randomPayoffs)" toolTip="Assign RANDOM PAYOFFS to all players." />
+							<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/text_list_numbers_vert.png')"   
+									   click="setExtensiveStep(4);controller.doAction(actions.randomPayoffs);setAutoPayoffs(true);" toolTip="Assign ORDERED PAYOFFS to all players." />
+							<mx:Button id="ngToggleZeroSum" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/zerosum.png')"  
+									   toggle="true" selected="{controller.isZeroSum}" change="setExtensiveStep(4);controller.isZeroSum = event.target.selected;toggleZeroSum();"  
+									   overIcon="@Embed(source='../../../../../../assets/icons/nzerosum.png')"
+									   toolTip="Zero Sum {controller.isZeroSum ? 'ON' : 'OFF'}"/>
+						</s:HGroup>
+
+						<mx:Spacer width="{postPayoffsStepSpacer}"/>	
+						
+					</s:HGroup>	
+					
+					<s:HGroup gap="-1" left="343" right="0" depth="3" verticalAlign="middle" clipAndEnableScrolling="true">
+					
+					
+						<s:VGroup  visible="{Player1InputVisible}" includeInLayout="{Player1InputVisible}">
+							<s:TextInput styleName="mxLabels" id="ngPlayer1Input" text="Player1" focusSkin="util.BouncingArrowFocusSkin" keyDown="keyDownNGPlayer1(event);"
+										 focusOut="focusOutNGPlayer1(event);" 
+										 toolTip="Change the player name of PLAYER 1"/>
+							<s:Label styleName="mxSmallLabels" text="Player 1 Name" />						
+						</s:VGroup>
+						
+						
+						
+						<s:VGroup  visible="{Player2InputVisible}" includeInLayout="{Player2InputVisible}">
+							<s:TextInput styleName="mxLabels" id="ngPlayer2Input" text="Player2" focusSkin="util.BouncingArrowFocusSkin" keyDown="keyDownNGPlayer2(event);"
+										 focusOut="focusOutNGPlayer2(event);"
+										 toolTip="Change the player name of PLAYER 2"/>
+							<s:Label styleName="mxSmallLabels" text="Player 2 Name" />
+						</s:VGroup>
+						
+						
+						<!-- //CMP: Enable changing Player 3 Name -->
+						
+						<s:VGroup  visible="{Player3InputVisible}" includeInLayout="{Player3InputVisible}">
+							<s:TextInput styleName="mxLabels" id="ngPlayer3Input" text="Player3" focusSkin="util.BouncingArrowFocusSkin" keyDown="keyDownNGPlayer3(event);"
+										 focusOut="focusOutNGPlayer3(event);"
+										 toolTip="Change the player name of PLAYER 3"/>
+							<s:Label styleName="mxSmallLabels" text="Player 3 Name" />
+						</s:VGroup>
+						
+					</s:HGroup>
+					
+					<MouseScroller id="scrollbarEF" width="100%" height="100%">
+						<s:Group id="viewport" width="100%" height="100%">
+							<Canvas id="canvas" width="100%" height="100%" click="handleClickOnCanvas()" painter="{treePainter}" preinitialize="controller.canvas = canvas;" />
+						</s:Group>
+					</MouseScroller>
+					
+					<s:Label id="info" top="5" right="{scrollbarEF.verticalScrollBar.visible ? 20 : 5}" fontFamily="Helvetica" text="{int(canvas.width)} x {int(canvas.height)} ({int(treePainter.scale * 100)}%)" />
+					<s:VGroup top="5" left="5" horizontalAlign="center" >
+						<s:Label top="5" styleName="mxLabels" color="0x808080" text="VIEW ONLY" toolTip="Toggle EF Edit mode for editing the tree" 
+								 visible="{editMode!=0}"/>
+						<s:Button styleName="mxLabels" label="Click to edit" 
+								  visible="{editMode!=0}" click="changeEditMode(0);"/>
+					</s:VGroup>
+						
+				</s:NavigatorContent>
+				
+				<s:NavigatorContent label="Strategic Form">
+					
+					<s:VGroup left="210" horizontalAlign="center"  width="100%" >
+						<MatrixEditor id="matrixEditor" xmlns="lse.math.games.builder.view.*" />	
+					</s:VGroup>
+						
+				
+					<s:VGroup top="5" left="120" horizontalAlign="center" >
+						<s:Label  styleName="mxLabels" color="0x808080" text="VIEW ONLY" toolTip="Toggle SF Edit mode for editing the matrix" 
+								 visible="{editMode!=1}"/>
+						<s:Button   styleName="mxLabels" label="Click to edit" 
+								  visible="{editMode!=1}" click="changeEditMode(1);"/>
+					</s:VGroup>							
+					
+					<s:HGroup gap="-1" left="340" right="0" top="-{buttonHeight2}" depth="3" verticalAlign="bottom" clipAndEnableScrolling="true">
+						<mx:Spacer width="{buttonWidth1}" />
+						
+						<mx:Button id="generalMatrix" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/nzerosum.png')" toolTip="General matrix"
+								   toggle="true" click="matrixEditor.changeEvtRadioButton('2G');transpoMatrix.selected=false;ngToggleZeroSumStrategic.selected=false;" visible="{editMode==1}"/>
+						<mx:Button id="ngToggleZeroSumStrategic" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/zerosum.png')"  
+								   toggle="true" selected="{controller.isZeroSum}" change="controller.isZeroSum = event.target.selected;toggleZeroSum();transpoMatrix.selected=false;generalMatrix.selected=false;"  
+								   toolTip="Zero Sum" visible="{editMode==1}"/>
+						<mx:Button id="transpoMatrix" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/transpo.png')" toolTip="Symmetric matrix"
+								   toggle="true" click="matrixEditor.changeEvtRadioButton('SG');generalMatrix.selected=false;ngToggleZeroSumStrategic.selected=false;" visible="{editMode==1}"/>
+						<mx:Spacer width="{buttonWidth1}" />
+						<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/wand.png')"   
+								   click="matrixEditor.generateRandomPayoffs();" toolTip="Generate random payoffs." visible="{editMode==1}" />
+					</s:HGroup>
+				</s:NavigatorContent>		
+		
+				<s:NavigatorContent label="Matrix Layout" creationPolicy="none">
+						
+					<MouseScroller id="scrollbarSF" width="100%" height="100%">
+						<s:Group id="viewportNF" width="100%" height="100%">
+							<Canvas id="canvasNF" width="100%" height="100%" painter="{matrixPainter}" />
+						</s:Group>
+					</MouseScroller>
+					
+					
+					<s:Label id="infoNF" top="5" right="{scrollbarSF.verticalScrollBar.visible ? 20 : 5}" fontFamily="Helvetica" text="{int(canvasNF.width)} x {int(canvasNF.height)} ({int(matrixPainter.scale * 100)}%)" />
+					
+							
+					
+					<s:HGroup gap="-1" left="340" right="0" top="-{buttonHeight2}" depth="3" verticalAlign="bottom" clipAndEnableScrolling="true">
+						<mx:ToggleButtonBar id="nfReducedBar" buttonHeight="{buttonHeight2}" buttonWidth="{buttonWidth1}" buttonStyleName="myButton" firstButtonStyleName="myButton" lastButtonStyleName="myButton" selectedIndex="0" valueCommit="controller.isStrategicReduced = (event.target.selectedIndex == 0);">
+							<mx:dataProvider>					
+								<mx:ArrayCollection>
+									<mx:source>
+										<fx:Object icon="@Embed(source='../../../../../../assets/icons/arrow_in.png')" toolTip="Reduced Strategic Form" /> 
+										<fx:Object icon="@Embed(source='../../../../../../assets/icons/arrow_out.png')" toolTip="Full Strategic Form" /> 										
+									</mx:source>
+								</mx:ArrayCollection>
+							</mx:dataProvider>
+						</mx:ToggleButtonBar>
+						<mx:Spacer width="{buttonWidth1}" />
+							
+					</s:HGroup>
+				</s:NavigatorContent>		
+				
+			
+			</mx:TabNavigator>
+			
+		</s:BorderContainer>
+		
+		<!-- SEQUENCE TABLE -->
+		<mx:DataGrid id="leaves" dataProvider="{controller.outcomeData}" bottom="{bottomMargin}" top="30" right="0" width="180" borderColor="0x808080"
+					 editable="{editMode==0}" visible="false" draggableColumns="false" sortableColumns="false" 
+					 change="controller.selectedOutcome = (leaves.selectedItem != null ? leaves.selectedItem.uid : -1);" 
+					 focusOut="controller.selectedOutcome = -1" focusIn="controller.selectedOutcome = (leaves.selectedItem != null ? leaves.selectedItem.uid : -1);">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Sequence" dataField="leaf" width="110" editable="true"/>				
+				<mx:DataGridColumn headerText="{controller.player1Name}" dataField="pay1" width="33" editable="true" />
+				<mx:DataGridColumn headerText="{controller.player2Name}" dataField="pay2" width="33" editable="{!controller.isZeroSum}"/>
+			</mx:columns>
+		</mx:DataGrid>
+		
+		<!-- BOTTOM LOG LINE -->
+		<s:BorderContainer id="logLineContainer" left="1" right="1" bottom="1" height="{arrowHeight}" borderColor="0xbb0000">
+		
+				<s:Label id="logLine" height="100%" width="100%"  backgroundColor="0xd6d6d6"
+						 color="#000000" creationComplete="initLogLineListener();"
+						 styleName="mxLabels" fontSize="10" paddingLeft="5" 
+						 paddingRight="5" paddingTop="2" textAlign="left" verticalAlign="middle"/>
+		
+		</s:BorderContainer>
+		
+		
+	</s:Group>
+</s:Application>

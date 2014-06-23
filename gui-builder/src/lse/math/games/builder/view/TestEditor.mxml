@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:local="."
+			   title="Test editor"
+			   close="promptExit()">
+	<fx:Script>
+		<![CDATA[
+			import flash.ui.Keyboard;
+			
+			import lse.math.games.builder.model.Outcome;
+			import lse.math.games.builder.model.Player;
+			import lse.math.games.builder.model.Rational;
+			import lse.math.games.builder.model.StrategicForm;
+			import lse.math.games.builder.model.Strategy;
+			import lse.math.games.builder.presenter.Presenter;
+			import lse.math.games.builder.viewmodel.AutoLabeller;
+			
+			import mx.controls.Alert;
+			import mx.controls.ProgressBar;
+			import mx.managers.PopUpManager;
+			import mx.utils.StringUtil;
+			
+			import spark.components.Application;
+			import spark.components.TitleWindow;
+			
+			import util.Log;
+			import util.PromptThreeButtons;
+			import util.PromptTwoButtons;
+			
+			
+			private var _matrix:StrategicForm;
+			private var _strMap:Dictionary;
+			private var _payMap:Dictionary;
+			private var _controller:Presenter;
+			
+			import lse.math.games.builder.settings.UserSettings;
+			import lse.math.games.builder.settings.SCodes;
+		
+
+			
+			private var log:Log = Log.instance;
+			
+			private var payoffMatrix1:Array;
+			private var payoffMatrix2:Array;
+			private var maxColumns:int;
+			
+			[Bindable]
+			public var alpha1:String; //String with the strategies of pl1
+			[Bindable]
+			public var pl1NumStr:int;
+			[Bindable]
+			private var pl1PayMapStr:String;
+			
+			[Bindable]
+			private var alpha2:String; //String with the strategies of pl2
+			[Bindable]
+			private var pl2NumStr:int;
+			[Bindable]
+			private var pl2PayMapStr:String;
+			
+			[Bindable]
+			private var p2editable:Boolean=false;
+			
+			[Bindable]
+			private var p2cbg:uint=0xffffff;
+			
+			private var glbSettings:UserSettings = UserSettings.instance;
+			
+			[Bindable]
+			private var _paramDimensions:String="10";
+			[Bindable]
+			private var _paramMaxPayoff:String="100";
+			[Bindable]
+			private var _paramZeroSum:Boolean=true;
+			[Bindable]
+			private var _paramFormulaP1:String="";
+			[Bindable]
+			private var _paramFormulaP2:String="";
+			[Bindable]
+			private var _discFrom:String="1";
+			[Bindable]
+			private var _discTo:String="10";
+			[Bindable]
+			private var _discStep:String="1";
+	
+			private var waitingpopup:TitleWindow = new TitleWindow();
+			private var pb:ProgressBar
+			private  var timer:Timer;
+			
+
+			
+			public function set matrix(value:StrategicForm):void { 
+				_matrix = value;
+				
+				_strMap = new Dictionary();
+				_payMap = _matrix.payMatrixMap;
+				
+				for(var i:int = 0, pl:Player = _matrix.firstPlayer; i<_matrix.numPlayers; i++, pl=pl.nextPlayer)
+					_strMap[pl] = _matrix.strategies(pl);
+				
+			}
+				
+			
+			/** Presenter to which changes should be invalidated */
+			public function set controller(value:Presenter):void {
+				_controller = value;
+				
+			}
+			
+			
+			//Populates the matrix payoffs and strategies of player number 'plIdx' (starting in 0)
+			//onto the graphical components
+			private function populate(plIdx:int):void {
+				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				var pl:Player = _matrix.firstPlayer;
+				for(var i:int = 0; i<plIdx; i++)
+					pl = pl.nextPlayer;
+				
+				var strVec:Vector.<Strategy> = _strMap[pl];
+				
+				if(plIdx == 0)
+				{
+					alpha1 = strVec.join(delimeter);
+					pl1NumStr = strVec.length;
+					pl1PayMapStr = payoffMatrixString(pl);
+				} else if(plIdx == 1)
+				{
+					alpha2 = strVec.join(delimeter);
+					pl2NumStr = strVec.length;		
+					pl2PayMapStr = payoffMatrixString(pl);
+				}
+			}
+			
+			//Update the alphabets from the text boxes and autolabelling the rest
+			private function updateAlphabets():void {
+				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				var inUse:Vector.<String> = new Vector.<String>();
+				
+				var strVec1:Vector.<String> = new Vector.<String>();
+				var strVec2:Vector.<String> = new Vector.<String>();
+				
+				/*
+				for each(var st:String in pl1StratInput.text.split(delimeter)) {
+					if(st != null && st.length>0) {
+						inUse.push(st.toString().toLowerCase());
+						strVec1.push(st);
+					}
+				}
+				for each(st in pl2StratInput.text.split(delimeter)) {
+					if(st != null && st.length>0) {
+						inUse.push(st.toString().toLowerCase());
+						strVec2.push(st);
+					}
+				}
+				*/
+				
+				var al:AutoLabeller = new AutoLabeller();
+				al.uniqueLabelNum = (pl1NumStr+pl2NumStr-strVec1.length-strVec2.length) > 0 ? 
+					pl1NumStr+pl2NumStr-strVec1.length-strVec2.length : 0;
+				
+				alpha1 = "";
+				for(var i:int = 0; i<pl1NumStr; i++)
+				{
+					var stratName:String;
+					if(i<strVec1.length) 
+						stratName = strVec1[i].toString()
+					else {
+						while(true){
+							stratName = al.getNextAutoLabel_Player1(_matrix);
+							if(inUse.indexOf(stratName.toLowerCase())<0)
+								break;
+						}
+					}
+					alpha1+= (stratName+delimeter);
+				}
+				
+				alpha2 = "";
+				for(i = 0; i<pl2NumStr; i++)
+				{
+					if(i<strVec2.length) 
+						stratName = strVec2[i].toString()
+					else {
+						while(true){
+							stratName = al.getNextAutoLabel_Player2(_matrix);
+							if(inUse.indexOf(stratName.toLowerCase())<0)
+								break;
+						}
+					}
+					alpha2+= (stratName+delimeter);
+				}
+				
+			}
+			
+			//Returns a string with the payoff matrix of a player
+			
+			private function payoffMatrixString(player:Player):String
+			{
+				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				var pl1StrVec:Vector.<Strategy> = _strMap[_matrix.firstPlayer];
+				var pl2StrVec:Vector.<Strategy> = _strMap[_matrix.firstPlayer.nextPlayer];
+				
+				var lines:Vector.<String> = new Vector.<String>();
+				for each(var st1:Strategy in pl1StrVec)
+				{
+					var columns:Vector.<String> = new Vector.<String>();
+					
+					for each(var st2:Strategy in pl2StrVec)
+					columns.push(_payMap[player][Strategy.key([st1,st2])]);
+					
+					lines.push(columns.join(delimeter));
+				}
+				return lines.join("\n");
+			}
+			
+			
+			
+			/* <--- --- CLOSE HANDLERS --- ---> */	
+			// Prompt if the user wants to exit saving changes
+			private function promptExit():void {
+				exit();
+			}
+			
+			private function resultFromExitPrompt():void {
+				if(PromptThreeButtons.buttonPressed == PromptThreeButtons.OK)
+					saveChanges();
+				else if(PromptThreeButtons.buttonPressed == PromptThreeButtons.DISCARD)
+					exit();
+			}
+			
+			// Save the changes into the new matrix
+			private function saveChanges():void 
+			{
+			
+				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				updateAlphabets();
+				
+				var firstPl:Player = _matrix.firstPlayer;
+				_matrix.clearMatrix();
+				_matrix.firstPlayer = firstPl;
+				
+				var rows:Vector.<Strategy> = new Vector.<Strategy>();
+				var cols:Vector.<Strategy> = new Vector.<Strategy>();
+				
+				for each(var st:String in alpha1.split(delimeter))
+				{
+					if(st != null && st.length>0) {
+						var strat:Strategy = new Strategy(firstPl);
+						strat.name = st;
+						rows.push(strat);
+						_matrix.addStrategy(strat);
+					}
+				}
+				
+				for each(st in alpha2.split(delimeter))
+				{
+					if(st != null && st.length>0) {
+						strat = new Strategy(firstPl.nextPlayer);
+						strat.name = st;
+						cols.push(strat);
+						_matrix.addStrategy(strat);
+					}
+				}
+				
+				if ((pl1PayMapStr!=null) && (pl1PayMapStr.length>0) &&
+					(pl2PayMapStr!=null) && (pl2PayMapStr.length>0)) {
+		
+					var lines1:Array = pl1PayMapStr.split("\n");
+					var lines2:Array = pl2PayMapStr.split("\n");
+					
+					for each(strat in rows)
+					{
+						var columns1:Array = new Array();
+						var line:String = lines1.shift() as String;
+						if(line != null)
+							columns1 = line.split(delimeter);
+						
+						var columns2:Array = new Array();
+						line = lines2.shift() as String;
+						if(line != null)
+							columns2 = line.split(delimeter);
+						
+						for each(var strat2:Strategy in cols)
+						{
+							var payStr1:String;
+							var payStr2:String;
+							var outcome:Outcome = new Outcome();
+							
+							while(true) {
+								payStr1 = trim(columns1.shift() as String);
+								if(payStr1 != null && Rational.parse(payStr1) != Rational.NaN){
+									outcome.setPay(firstPl, Rational.parse(payStr1));
+									break;
+								} else if(columns1.length==0){
+									outcome.setPay(firstPl, Rational.NaN);
+									break;
+								}
+							}
+							
+							while(true) {
+								payStr2 = trim(columns2.shift() as String);
+								if(payStr2 != null && Rational.parse(payStr2) != Rational.NaN){
+									outcome.setPay(firstPl.nextPlayer, Rational.parse(payStr2));
+									break;
+								} else if(columns2.length==0) {
+									outcome.setPay(firstPl.nextPlayer, Rational.NaN);
+									break;
+								}
+							}
+							_matrix.addPayoff([strat, strat2], outcome, Rational.ONE);
+						}
+					}
+					
+					//invalidate display
+					if(_controller != null)
+						_controller.invalidate(false, true, true); 
+					else
+						log.add(Log.ERROR_HIDDEN, "No controller defined ", "Settings");
+					
+				}
+						
+				exit();
+			}
+			
+			//Close the window
+			private function exit():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function trim( s:String ):String
+			{
+				if (s!=null){
+					if (Rational.parse(s) == Rational.NaN)
+						return s;
+					else
+						return s.replace( /^([\s|\t|\n]+)?(.*)([\s|\t|\n]+)?$/gm, "$2" );
+				} else{
+					return s;
+				}
+			}
+			
+			private function convertToMatrix(inputString:String,pm:Array):void {
+				
+				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				var rows:Array = inputString.split("\n");
+				var line:String = rows.shift() as String;
+				maxColumns=0;
+				while ( line != null ) {
+					var columns:Array = line.split(delimeter);
+					var column:String = columns.shift() as String;
+					var matrixRow:Array=new Array();
+					while (column != null) {
+						if (trim(column) !="") {
+							matrixRow.push(column);
+							pb.label="j";
+						}
+						column = columns.shift() as String;
+					}
+					if (matrixRow.length>maxColumns) {
+						maxColumns=matrixRow.length;
+					}
+					if (matrixRow.length>0) {
+						pm.push(matrixRow);
+					}
+					line = rows.shift() as String;
+				}
+			}
+			
+			private function fillWithZeros(pm:Array,sym:Boolean):void{
+				var i:int=0;
+				var l:int=0;
+				var k:int=0;
+				
+				for (i=0;i<pm.length;i++){
+					l=pm[i].length;
+					if (l<maxColumns) {
+						for (k=0;k<maxColumns-l;k++) {
+							pm[i].push("0");
+						}
+					}
+				}
+				
+				//if game is symmetric rows and columns must have the same dimensions
+				//Fill with zeros if not
+				if (sym) {
+					if (pm.length<maxColumns) {
+						while (pm.length<maxColumns) {
+							pm.push(new Array())
+							for (k=0;k<maxColumns;k++) {
+								pm[pm.length-1].push("0");
+							}
+						}
+						
+					} 
+					
+					if (pm.length>maxColumns){
+						for (i=0;i<pm.length;i++){
+							l=pm[i].length;
+							if (l<pm.length) {
+								for (var m:int=0;m<pm.length-l;m++) {
+									pm[i].push("0");
+								}
+							}
+						}
+					}
+					maxColumns=pm.length;
+				}
+				
+				
+			}
+			
+			private function makeNegative(pmFrom:Array,pmTo:Array):void {
+				for (var i:int=0;i<pmFrom.length;i++){
+					var columns:Array=new Array();
+					for (var j:int=0;j<pmFrom[i].length;j++){
+						var r:Rational=Rational.parse(pmFrom[i][j]);
+						if(pmFrom[i][j] != null && r != Rational.NaN){
+							r=r.multiply(new Rational(-1,1));
+							columns.push(r.toString());	
+						}
+						
+						
+					}
+					pmTo.push(columns)
+				}
+			}
+			
+			private function makeTranspo(pmFrom:Array,pmTo:Array):void {
+				
+				for (var j:int=0;j<pmFrom[0].length;j++){
+					var columns:Array=new Array();
+					for (var i:int=0;i<pmFrom.length;i++){
+						columns.push(pmFrom[i][j]);
+					}
+					pmTo.push(columns);
+				}
+			}
+			
+			private function buildMatrixString(pm:Array):String 
+			{
+				
+				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				var maxLength:Array = new Array();
+				var i:int=0;
+				var j:int=0;
+				
+				if (pm==null) 
+					return Rational.NaN as String;
+				if (pm[0]==null) 
+					return Rational.NaN as String;
+				
+				for (j=0;j<pm[0].length;j++){
+					var maxLen:int = 0;
+					for (i=0;i<pm.length;i++){
+						if (pm[i][j]!=null) {
+							if (pm[i][j].length>maxLen) {
+								maxLen=pm[i][j].length;
+							}
+							log.add(Log.DEBUG,pm[i][j]);
+						}
+					}
+					maxLength.push(maxLen) as int;
+				}
+				
+				var matrixString:String= "";
+				for (i=0;i<pm.length;i++){
+					for (j=0;j<pm[i].length;j++){
+						matrixString += StringUtil.repeat(" ", maxLength[j] - pm[i][j].length ) + pm[i][j];
+						if (j<pm[i].length-1){
+							matrixString +=delimeter;
+						}
+						
+					}
+					if (i<pm.length - 1) {
+						matrixString += "\n";
+					}
+				}
+				return matrixString;
+				
+			}
+
+			
+			private function getMode():int {
+				return tab.selectedIndex;
+			}
+			
+		
+			private function keyPressedP1Payoff(event:KeyboardEvent):void{
+				
+			}
+			
+			private function keyPressedP2Payoff(event:KeyboardEvent):void{
+				
+			}
+
+		private function getRandomMatrix():void {
+				if (waitingpopup==null)
+					waitingpopup = new TitleWindow();
+				waitingpopup.title = "Please Wait";
+				pb = new ProgressBar();
+				pb.indeterminate = false;
+				pb.mode="manual"
+				pb.label = "Processing...";
+				pb.addEventListener(Event.COMPLETE,progressBar_complete);		
+				waitingpopup.addElement(pb);    
+				waitingpopup.visible=true;
+
+				timer = new Timer(5);
+				timer.addEventListener(TimerEvent.TIMER, timer_timer);
+				timer.start();
+				
+				PopUpManager.addPopUp(waitingpopup,this.parentApplication as DisplayObject, false);
+				PopUpManager.centerPopUp(waitingpopup);
+				
+			}
+
+			private function timer_timer(evt:TimerEvent):void {
+				pb.setProgress(pb.value + 1, 50);
+				if (pb.value==25){
+					
+					if (getMode()==0) {
+						//Random
+						compute();
+					} else if (getMode()==1) {
+						//Formula
+						callRef();
+					}
+				}
+			}
+
+			private function progressBar_complete(evt:Event):void {
+				timer.stop();
+				if (waitingpopup!=null) {
+					PopUpManager.removePopUp(waitingpopup);
+					waitingpopup=null;
+				}
+			}
+			
+			
+			private function randomRange(max:Number, min:Number = 0, decimal:Boolean=false):Number
+			{
+				if (decimal)
+					return Math.random() * (max - min) + min;
+				else
+					return Math.round(Math.random() * (max - min) + min);
+			}
+			
+			
+			private function compute():void {
+				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				var s:String="";
+				var ms:Number;
+				var zs:Boolean=paramZeroSum.selected;
+				var i:int;
+				var j:int;
+				var n:int;
+				var r:int;
+
+				payoffMatrix1=new Array();
+				payoffMatrix2=new Array();
+
+				s="";
+				ms=Number(paramDimensions.text);
+				for (i=0;i<ms;i++){
+					for (j=0;j<ms;j++){
+						n=randomRange(0,Number(paramMaxPayoff.text),false);
+						r=randomRange(1,2,false);
+							if (r==1){
+								n=n*(-1);
+							}
+						s=s+n as String;
+						if (j<ms-1)
+							s=s+delimeter;
+						//pb.label="j";
+					}
+					if (i<ms-1)
+						s=s+"\n";
+				}
+
+				pl1PayMapStr=s;
+				convertToMatrix(pl1PayMapStr,payoffMatrix1);
+				fillWithZeros(payoffMatrix1,false);
+				
+				if (!zs) {
+					s="";
+					ms=Number(paramDimensions.text);
+					for (i=0;i<ms;i++){
+						for (j=0;j<ms;j++){
+							n=randomRange(0,Number(paramMaxPayoff.text),false);
+							r=randomRange(1,2,false);
+							if (r==1){
+								n=n*(-1);
+							}
+							s=s+n as String;
+							if (j<ms-1)
+								s=s+delimeter;
+							pb.label="j";
+						}
+						if (i<ms-1)
+							s=s+"\n";
+					}
+					
+					pl2PayMapStr=s;
+					convertToMatrix(pl2PayMapStr,payoffMatrix2);
+					fillWithZeros(payoffMatrix2,false);
+				} else {
+					makeNegative(payoffMatrix1,payoffMatrix2);
+				}
+				
+				pl1PayMapStr=buildMatrixString(payoffMatrix1)
+				pl2PayMapStr=buildMatrixString(payoffMatrix2)
+				
+				pl1NumStr = payoffMatrix1.length;
+				if (payoffMatrix2.length>0) {
+					pl2NumStr = payoffMatrix2[0].length;
+				}else {
+					pl2NumStr =0;
+				}
+				updateAlphabets()				
+			}
+						
+			
+			
+			private function callRef():void {
+				var srv:HTTPService = HTTPService(httpService);
+				srv.url = "/gte/parser/servlet";
+				var params:Object = {};			
+				params.d="[X]+[Y]";
+				srv.send(params);
+			}
+			
+			private function getOutputFromHttp(e:String):void {
+				PopUpManager.addPopUp(intOutputWindow, this, false);
+				intOutputWindow.setText(e);
+				PopUpManager.centerPopUp(intOutputWindow);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<OutputWindow id="intOutputWindow" xmlns="lse.math.games.builder.view.*" skinClass="lse.math.games.builder.view.OutputWindowSkin" />
+		<mx:HTTPService id="httpService"
+						concurrency="single"		 
+						method="POST"		 
+						resultFormat="text"
+						showBusyCursor="true"
+						fault="log.add(Log.ERROR, event.fault.faultCode + ':' + event.fault.faultString + ':' + event.fault.faultDetail)"
+						result="getOutputFromHttp(event.result as String);"	/>
+		
+	</fx:Declarations>
+	<fx:Style>
+		@font-face {
+			src:url("../../../../../../assets/fonts/COURBD.TTF");
+			fontFamily: myFontFamily;
+			advancedAntiAliasing: true;
+		}
+	</fx:Style>
+
+	<s:VGroup width="819" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+		<mx:TabNavigator width="796" height="200" id="tab">
+			<s:NavigatorContent  width="100%" height="100%" label="Random">
+				<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+					<s:HGroup width="100%" >
+						<s:Label y="0" width="200" height="20" text="Enter dimensions: " verticalAlign="middle"/>
+						<s:TextInput id="paramDimensions" width="100%" editable="true" widthInChars="22" text="{_paramDimensions}"  />
+					</s:HGroup>
+					<s:HGroup width="100%" >
+						<s:Label y="0" width="200" height="20" text="Enter max payoff: " verticalAlign="middle"/>
+						<s:TextInput id="paramMaxPayoff" width="100%" editable="true" widthInChars="22" text="{_paramMaxPayoff}"  />
+					</s:HGroup>
+					<s:HGroup width="100%" >
+						<s:CheckBox id="paramZeroSum" label="ZeroSum game" selected="{_paramZeroSum}"/>
+					</s:HGroup>
+				</s:VGroup>	
+			</s:NavigatorContent>
+			<!--
+			<s:NavigatorContent width="100%" height="100%" label="Formular">
+				<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+					<s:HGroup  width="100%" verticalAlign="middle">
+						<s:Label height="20" width="200" text="Formula Player 1" verticalAlign="middle" />
+						<s:TextInput id="paramFormulaP1" width="100%" editable="true" widthInChars="22" text="{_paramFormulaP1}"  />
+					</s:HGroup>
+					<s:HGroup  width="100%" verticalAlign="middle">
+						<s:Label height="20" width="200" text="Formula Player 2" verticalAlign="middle" />
+						<s:TextInput id="paramFormulaP2" width="100%" editable="true" widthInChars="22" text="{_paramFormulaP2}"  />
+					</s:HGroup>
+					<s:Label height="20" width="200" text="Discretization" verticalAlign="middle" />
+					<s:HGroup  width="100%" verticalAlign="middle">
+						<s:Label height="20" width="90" text="From:" verticalAlign="middle" />
+						<s:TextInput id="discFrom" width="100%" editable="true" widthInChars="22" text="{_discFrom}"  />
+						<s:Label height="20" width="90" text="To:" verticalAlign="middle" />
+						<s:TextInput id="discTo" width="100%" editable="true" widthInChars="22" text="{_discTo}"  />
+						<s:Label height="20" width="90" text="Granularity" verticalAlign="middle" />
+						<s:TextInput id="discStep" width="100%" editable="true" widthInChars="22" text="{_discStep}"  />
+					</s:HGroup>
+				</s:VGroup> 
+			</s:NavigatorContent>
+			-->
+		</mx:TabNavigator>
+		<s:HGroup width="100%" gap="0">	
+			<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+				<s:Label height="20" color="#2323E6" text="Player 1 PayOff Matrix"
+						 verticalAlign="middle"/>
+				<s:TextArea id="pl1PayMapStrBox" width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="15" lineBreak="explicit" 
+							text="{pl1PayMapStr}" change="pl1PayMapStr = pl1PayMapStrBox.text;" />
+				<s:HGroup width="100%" horizontalAlign="center">
+					<s:Button label="Generate" cornerRadius="0" click="getRandomMatrix();"/>
+				</s:HGroup>
+			</s:VGroup>
+			<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+				<s:Label height="20" color="#2323E6" text="Player 2 PayOff Matrix"
+						 verticalAlign="middle"/>
+				<s:TextArea editable="{p2editable}" id="pl2PayMapStrBox" width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="15" lineBreak="explicit" 
+							text="{pl2PayMapStr}" change="pl2PayMapStr = pl2PayMapStrBox.text;" contentBackgroundColor="{p2cbg}"  />
+				<s:HGroup width="100%" horizontalAlign="center">
+					<s:Button enabled="{p2editable}" label="Reset" cornerRadius="0" click="populate(1);" />
+				</s:HGroup>
+			</s:VGroup>
+		</s:HGroup>
+
+		<s:HGroup width="100%" horizontalAlign="center" paddingBottom="5" paddingTop="5">
+			<s:Button label="Close and generate test" cornerRadius="0" width="200" click="saveChanges();"/>
+			<s:Button label="Close and do nothing" cornerRadius="0" width="200" click="exit()"/>
+		</s:HGroup>
+
+		
+	</s:VGroup>
+	
+</s:TitleWindow>

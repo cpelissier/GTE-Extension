@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="400" minHeight="500" xmlns:presenter="lse.math.games.builder.presenter.*"
+		 xmlns:local="."
+		 title="Settings"
+		 close="exit()">
+	
+	<fx:Script>
+		<![CDATA[
+			import lse.math.games.builder.fig.FigFontManager;
+			import lse.math.games.builder.presenter.Presenter;
+			
+			import mx.managers.PopUpManager;
+			
+			import util.Log;
+
+			/**
+			 * <b>INSTRUCTIONS</b>
+			 * <p>Adding a new Setting</p>
+			 * <ol>
+			 * <li>First, define its identifier in SCodes.as, in the same fashion as already existing settings. 
+			 * Also define its default value in the defaultSettings() function, and please document everything :)</li>
+			 * <li>Now, add here a form item inside the tab that you most want, with the label that you want, and do these 3 things:
+			 * <ul><li>Set the id of the color picker/toggle/textinput... to the same as the identifier that you defined earlier</li>
+			 * 	   <li>Set the 'creationComplete' hanler to get the property of the item (e.g., 'selectedColor', 'selected', etc) 
+			 * 			with settings.getValue(SCodes.THE_ID_YOU_CREATED) as WhateverTypeItShouldBe</li>
+			 *     <li>Set the 'change' behaviour of your setting, which will normally just be setGlobalSetting/setFileSetting(SCodes.THE_ID_YOU_CREATED, 
+			 * 			THE_ID_YOU_CREATED.valueYouReInterestedIn)</li></ul>
+			 * </li>
+			 * <li>Finally, don't forget to use your settings value wherever you need it with 
+			 * 		UserSettings.instance.getValue(SCodes.THE_ID_YOU_CREATED) as WhateverTypeItShouldBe</li>
+			 * </ol>
+			 * 
+			 * <p>Using this Graphical Component</p>
+			 * <li>Just Pop it up using PopUpManager and set its width and height to your preferred values. 
+			 * Also set its 'controller' property to a valid one for invalidating the display with changes</li>
+			 */			
+			//TODO: Try to re-do the class using XML files with the options
+			
+			
+			private var unsavedChanges:Boolean = false;
+			private var glbSettings:UserSettings = UserSettings.instance;
+			private var fileSettings:FileSettings = FileSettings.instance;
+			private var _controller:Presenter;
+			
+			private var log:Log = Log.instance;
+			
+			
+			
+			public function set controller(value:Presenter):void { _controller = value; }
+			
+			// Invalidates the display and size in the controller. Should be called on settings 
+			// which should have an immediate graphic feedback
+			private function invalidate():void
+			{
+				if(_controller != null)
+					_controller.invalidate(false, true, true); 
+				else
+					log.add(Log.ERROR_HIDDEN, "No controller defined ", "Settings");
+			}
+			
+			//Sets a global setting (invalidating teh display if 'inv' is true
+			private function setGlobalSetting(key:String, value:Object, inv:Boolean=false):void
+			{				
+				if(!unsavedChanges)
+				{
+					if(glbSettings.getValue(key) == null)
+						unsavedChanges = true;
+					else if(glbSettings.getValue(key) != value)
+						unsavedChanges = true;
+				}
+				
+				glbSettings.setValue(key, value);
+				
+				//invalidate display
+				if(inv)
+					invalidate();
+			}
+			
+			//Sets a file setting
+			private function setFileSetting(key:String, value:Object, inv:Boolean = false):void
+			{				
+				fileSettings.setValue(key, value);
+				
+				//invalidate display
+				if(inv) 
+					invalidate();
+			}
+			
+			
+				
+			private function changeOrientation(orientation:int):void
+			{
+				if (_controller.treeMode){
+					setFileSetting(SCodes.TREE_ORIENTATION, orientation, true);
+					switch(orientation)
+					{
+						case 0:
+							_controller.doAction(actions.orientationUp);
+							break;
+						case 1:
+							_controller.doAction(actions.orientationDown);
+							break;
+						case 2:
+							_controller.doAction(actions.orientationLeft);
+							break;
+						case 3:
+							_controller.doAction(actions.orientationRight);
+							break;
+					}
+					invalidate();
+				}
+			}
+			
+			//Sets the file settings as default
+			private function setFileSettingsAsDefault():void
+			{
+				fileSettings.setAsDefault();
+				invalidate();
+				
+				unsavedChanges = true;
+				exit();
+			}
+			
+			//Resets the current file settings from the defaults
+			private function resetFileSettingsFromDefaults():void
+			{
+				glbSettings.firstLoad();
+				fileSettings.reset();
+				STORE_SETTINGS_LOCALLY.selected = glbSettings.getValue(SCodes.STORE_SETTINGS_LOCALLY) as Boolean;
+				outputDispGroup.selectedValue = (glbSettings.getValue(SCodes.DISPLAY_OUTPUT_INTERNALLY) as Boolean)?'flash':'HTML';
+				// MINIMUM_BUFFER_SIZE.value = glbSettings.getValue(SCodes.MINIMUM_BUFFER_SIZE) as int;
+				AUTOSAVE_ENABLED.selected = glbSettings.getValue(SCodes.AUTOSAVE_ENABLED) as Boolean;
+				AUTOSAVE_INTERVAL.enabled = glbSettings.getValue(SCodes.AUTOSAVE_ENABLED) as Boolean;
+				AUTOSAVE_INTERVAL.text = ''+(glbSettings.getValue(SCodes.AUTOSAVE_INTERVAL) as int);
+				AUTOADJUST_ENABLED.selected = glbSettings.getValue(SCodes.TREE_AUTO_ADJUST) as Boolean;
+				// MATRIX_DELIMETER.text = glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
+				// SYSTEM_ENABLE_GUIDANCE.selected = glbSettings.getValue(SCodes.SYSTEM_ENABLE_GUIDANCE) as Boolean;
+				SYSTEM_MAX_PAYOFF.text = String(glbSettings.getValue(SCodes.SYSTEM_MAX_PAYOFF));
+				SYSTEM_DECIMAL_PLACES.text = String(glbSettings.getValue(SCodes.SYSTEM_DECIMAL_PLACES));
+				
+				
+				
+				FILE_PLAYER_1_COLOR.selectedColor = fileSettings.getValue(SCodes.FILE_PLAYER_1_COLOR) as uint;
+				FILE_PLAYER_2_COLOR.selectedColor = fileSettings.getValue(SCodes.FILE_PLAYER_2_COLOR) as uint;
+				FILE_FONT.selectedItem = fileSettings.getValue(SCodes.FILE_FONT) as String;
+				FILE_STROKE_WIDTH.value = fileSettings.getValue(SCodes.FILE_STROKE_WIDTH) as int;
+				FILE_NODE_DIAMETER.value = (fileSettings.getValue(SCodes.FILE_NODE_DIAMETER) as Number);
+				FILE_ISET_DIAMETER.value = (fileSettings.getValue(SCodes.FILE_ISET_DIAMETER) as Number);
+				FILE_LEVEL_DISTANCE.value = (fileSettings.getValue(SCodes.FILE_LEVEL_DISTANCE) as int);
+				FILE_CELL_PADDING_VERT.value = (fileSettings.getValue(SCodes.FILE_CELL_PADDING_VERT) as Number);
+				FILE_CELL_PADDING_HOR.value = (fileSettings.getValue(SCodes.FILE_CELL_PADDING_HOR) as Number);
+				changeOrientation(SCodes.TREE_ORIENTATION as Number);
+				orientationBar.selectedIndex=SCodes.TREE_ORIENTATION as Number;
+				invalidate();
+				
+				
+			}
+			
+			//Saves settings if necessary, and closes the settings panel
+			private function exit():void
+			{
+				if(unsavedChanges) 					
+					glbSettings.saveCookiesIfPossible();
+				
+				PopUpManager.removePopUp(this);
+			}
+		
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<TreeGridActionFactory id="actions" xmlns="lse.math.games.builder.viewmodel.*" />	
+	</fx:Declarations>
+	
+		<mx:TabNavigator tabHeight="22" left="-1" right="-1" top="-1" bottom="-1">
+			<!-- General settings tab -->
+			<s:NavigatorContent width="100%"  label="General settings" >
+				<s:Group x="10" y="10" width="95%" height="95%">
+					<mx:Form width="100%" height="100%" >
+						<mx:FormItem label="Remember settings" toolTip="test">
+							<s:CheckBox id="STORE_SETTINGS_LOCALLY"
+										
+										creationComplete="STORE_SETTINGS_LOCALLY.selected = 
+										glbSettings.getValue(SCodes.STORE_SETTINGS_LOCALLY) as Boolean;"
+										
+										change="if(STORE_SETTINGS_LOCALLY.selected)
+										{
+										if(glbSettings.cookiesStorable)
+										setGlobalSetting(SCodes.STORE_SETTINGS_LOCALLY, true );
+										else
+										{
+										setGlobalSetting(SCodes.STORE_SETTINGS_LOCALLY, false );
+										STORE_SETTINGS_LOCALLY.selected = false;
+										glbSettings.askForCookiesStorable();
+										}
+										} else
+										{
+										setGlobalSetting(SCodes.STORE_SETTINGS_LOCALLY, false );
+										glbSettings.clearCookies();
+										}"
+										/>
+						</mx:FormItem>		
+						<mx:FormItem label="Display output pop-up:">
+							<mx:RadioButtonGroup id="outputDispGroup" enabled="true" 
+																								 
+												 itemClick="setGlobalSetting(SCodes.DISPLAY_OUTPUT_INTERNALLY, (outputDispGroup.selectedValue == 'flash'))" />
+							<mx:RadioButton label="In a flash window" group="{outputDispGroup}" value="flash" />
+							<mx:RadioButton label="In a new browser window" group="{outputDispGroup}" value="HTML"
+											
+											creationComplete="outputDispGroup.selectedValue = (glbSettings.getValue(SCodes.DISPLAY_OUTPUT_INTERNALLY) as Boolean)?'flash':'HTML'"/>
+						</mx:FormItem>
+                        <!-- // No Memory heading, no undoable actions
+						<mx:FormHeading label="Memory" />
+						<mx:FormItem label="Guaranteed undoable actions">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="MINIMUM_BUFFER_SIZE"
+                                toolTip="This is the minimum of actions that will be undoable. If the program runs smoothly, the actual number of undoable actions might be bigger."
+										   minimum="1" maximum="40" snapInterval="1"
+										   
+										   creationComplete="MINIMUM_BUFFER_SIZE.value = glbSettings.getValue(SCodes.MINIMUM_BUFFER_SIZE) as int"
+										   
+										   change="setGlobalSetting(SCodes.MINIMUM_BUFFER_SIZE, MINIMUM_BUFFER_SIZE.value as int)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{MINIMUM_BUFFER_SIZE.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+                        -->
+						<mx:FormItem label="Autosave">
+							<s:HGroup>
+								<s:CheckBox id="AUTOSAVE_ENABLED" 
+											toolTip="If enabled, the game will be autosaved for recovery in case there is an unexpected closure of the program."
+											
+											creationComplete="AUTOSAVE_ENABLED.selected =
+											glbSettings.getValue(SCodes.AUTOSAVE_ENABLED) as Boolean;"
+											
+											change="setGlobalSetting(SCodes.AUTOSAVE_ENABLED, AUTOSAVE_ENABLED.selected); 
+											AUTOSAVE_INTERVAL.enabled = AUTOSAVE_ENABLED.selected;" />
+								<s:TextInput id="AUTOSAVE_INTERVAL" widthInChars="2" restrict="0-9" textAlign="right"									 
+											 toolTip="Time in seconds after which the game will autosave"
+											 											 
+											 creationComplete="AUTOSAVE_INTERVAL.enabled = glbSettings.getValue(SCodes.AUTOSAVE_ENABLED) as Boolean;
+											 AUTOSAVE_INTERVAL.text = ''+(glbSettings.getValue(SCodes.AUTOSAVE_INTERVAL) as int);"
+											 
+											 change="setGlobalSetting(SCodes.AUTOSAVE_INTERVAL, int(AUTOSAVE_INTERVAL.text));" />
+							</s:HGroup>	
+						</mx:FormItem>
+						<mx:FormItem label="Auto Adjust">
+									<s:CheckBox id="AUTOADJUST_ENABLED" 
+											toolTip="if enabled, the tree size will be adjusted fit into the screen optimally."
+											
+											creationComplete="AUTOADJUST_ENABLED.selected =
+											glbSettings.getValue(SCodes.TREE_AUTO_ADJUST) as Boolean;"
+											
+											change="setGlobalSetting(SCodes.TREE_AUTO_ADJUST, AUTOADJUST_ENABLED.selected);" />
+						</mx:FormItem>
+                        <!--  // No Matrix Delimiter characters
+  						<mx:FormItem label="Matrix Delimeter">
+  							<s:TextInput id="MATRIX_DELIMETER" 
+  										toolTip="Sets the Matrix Delimeter."
+  										
+  										creationComplete="MATRIX_DELIMETER.text =
+  										glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;"
+  										
+  										change="setGlobalSetting(SCodes.EDITOR_MATRIX_DELIMETER, MATRIX_DELIMETER.text);" />
+  						</mx:FormItem>
+                        -->
+                        <!-- // No Guidance please
+						<mx:FormItem label="Enable guidance">
+							<s:CheckBox id="SYSTEM_ENABLE_GUIDANCE" 
+										toolTip="Enable this option and experience how to create a game tree."
+									
+										
+										creationComplete="SYSTEM_ENABLE_GUIDANCE.selected =
+										glbSettings.getValue(SCodes.SYSTEM_ENABLE_GUIDANCE) as Boolean;"
+										
+										change="setGlobalSetting(SCodes.SYSTEM_ENABLE_GUIDANCE, SYSTEM_ENABLE_GUIDANCE.selected);" />
+						</mx:FormItem>
+                        -->
+						<mx:FormItem label="Max Random Payoff">
+							<s:TextInput id="SYSTEM_MAX_PAYOFF" 
+										 toolTip="Sets the maximum payoff for random payoffs."
+										 
+										 creationComplete="SYSTEM_MAX_PAYOFF.text =
+										 String(glbSettings.getValue(SCodes.SYSTEM_MAX_PAYOFF));"
+										 
+										 change="setGlobalSetting(SCodes.SYSTEM_MAX_PAYOFF, Number(SYSTEM_MAX_PAYOFF.text));" />
+						</mx:FormItem> 
+						
+						<mx:FormItem label="Decimal places">
+							<s:HGroup>
+								<s:TextInput id="SYSTEM_DECIMAL_PLACES" 
+											 toolTip="Determine the number of decimals if you switch between decimal or rational layout"
+											 
+											 creationComplete="SYSTEM_DECIMAL_PLACES.text =
+											 String(glbSettings.getValue(SCodes.SYSTEM_DECIMAL_PLACES));"
+											 
+											 change="setGlobalSetting(SCodes.SYSTEM_DECIMAL_PLACES, Number(SYSTEM_DECIMAL_PLACES.text));" />
+							</s:HGroup>								
+						</mx:FormItem>
+						
+                        <!--  // don't want Move Labels BFS or DFS choice
+						<mx:FormItem label="MOVE LABELS">
+							<s:VGroup>
+								<s:RadioButton groupName="LABELING" 
+											   id="BFS_LABELING"
+											   label="BFS" 
+											   width="150"
+											   toolTip="Label moves using breadth first traversal."
+											   creationComplete="BFS_LABELING.selected =
+											   glbSettings.getValue(SCodes.SYSTEM_BFS_LABELING) as Boolean;"
+											   
+											   change="setGlobalSetting(SCodes.SYSTEM_BFS_LABELING, BFS_LABELING.selected);"
+											   
+											   
+											   />
+								<s:RadioButton groupName="LABELING" 
+											   id="DFS_LABELING"
+											   label="DFS" 
+											   width="150"
+											   toolTip="Label moves using depth first traversal."
+											   creationComplete="DFS_LABELING.selected =
+											   !glbSettings.getValue(SCodes.SYSTEM_BFS_LABELING) as Boolean;"
+											   
+											   change="setGlobalSetting(SCodes.SYSTEM_BFS_LABELING, !DFS_LABELING.selected);"
+											   											   											   
+											   />
+			      
+							</s:VGroup>
+							
+							
+							
+						</mx:FormItem>
+                        -->
+					</mx:Form>
+				</s:Group>
+			</s:NavigatorContent>	
+			
+			<!-- Current graphic settings tab -->
+			<s:NavigatorContent width="100%"  label="Current graphic settings" >
+				<s:Group x="10" y="10" width="95%" height="95%">
+					<s:VGroup>
+					<mx:Form width="100%" height="100%" >
+						<mx:FormItem label="Player colors">
+							<s:HGroup verticalAlign="middle">
+								<mx:ColorPicker id="FILE_PLAYER_1_COLOR" toolTip="Player 1's Color" 
+												
+												creationComplete="FILE_PLAYER_1_COLOR.selectedColor = 
+												fileSettings.getValue(SCodes.FILE_PLAYER_1_COLOR) as uint;" 
+												
+												change="setFileSetting(SCodes.FILE_PLAYER_1_COLOR, event.target.selectedColor, true);"/>
+								<mx:ColorPicker id="FILE_PLAYER_2_COLOR" toolTip="Player 2's Color" 
+												
+												creationComplete="FILE_PLAYER_2_COLOR.selectedColor = 
+												fileSettings.getValue(SCodes.FILE_PLAYER_2_COLOR) as uint;"
+												
+												change="setFileSetting(SCodes.FILE_PLAYER_2_COLOR, event.target.selectedColor, true);"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Tree orientation">
+							<mx:ToggleButtonBar id="orientationBar" buttonHeight="21" buttonWidth="23" buttonStyleName="myButton" firstButtonStyleName="myButton" lastButtonStyleName="myButton" 
+												valueCommit="changeOrientation(orientationBar.selectedIndex)"
+												selectedIndex="{fileSettings.getValue(SCodes.TREE_ORIENTATION) as Number}" >
+								<mx:dataProvider>	
+									<mx:ArrayCollection>
+										<mx:source>
+											<fx:Object icon="@Embed(source='../../../../../../assets/icons/orientation_up.png')" toolTip="Orientation: Root at top"/>
+											<fx:Object icon="@Embed(source='../../../../../../assets/icons/orientation_down.png')" toolTip="Orientation: Root at bottom"/>
+											<fx:Object icon="@Embed(source='../../../../../../assets/icons/orientation_left.png')" toolTip="Orientation: Root at left"/>
+											<fx:Object icon="@Embed(source='../../../../../../assets/icons/orientation_right.png')" toolTip="Orientation: Root at right"/>
+										</mx:source>
+									</mx:ArrayCollection>
+								</mx:dataProvider>
+							</mx:ToggleButtonBar>
+						</mx:FormItem>
+						<mx:FormItem label="Default font" toolTip="Select the default Font" >
+							<s:ComboBox id="FILE_FONT" width="106" height="24" 
+										
+										fontFamily="{FILE_FONT.selectedItem as String}"
+										
+										creationComplete="FILE_FONT.selectedItem = fileSettings.getValue(SCodes.FILE_FONT) as String"
+										
+										change="setFileSetting(SCodes.FILE_FONT, FILE_FONT.selectedItem, true);">
+								<s:dataProvider>
+									<mx:ArrayCollection source="{FigFontManager.getAvailableFontFamilies()}">
+										<mx:sort><mx:Sort /></mx:sort>
+									</mx:ArrayCollection>
+								</s:dataProvider>
+								<s:itemRenderer>
+									<fx:Component>
+										<s:ItemRenderer>							
+											<s:Label left="5" height="22" width="85" maxDisplayedLines="1" verticalAlign="middle" fontFamily="{data}" toolTip="{data}" text="{data}" />
+										</s:ItemRenderer>						
+									</fx:Component>					
+								</s:itemRenderer>
+							</s:ComboBox>
+						</mx:FormItem>
+						<mx:FormItem label="Stroke width"  toolTip="Increase or decrease the current file's stroke width">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="FILE_STROKE_WIDTH" minimum="1" maximum="6" snapInterval="1"
+										   
+										   creationComplete="FILE_STROKE_WIDTH.value = fileSettings.getValue(SCodes.FILE_STROKE_WIDTH) as int"
+										   
+										   change="setFileSetting(SCodes.FILE_STROKE_WIDTH, FILE_STROKE_WIDTH.value as int, true)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{FILE_STROKE_WIDTH.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormHeading label="Tree settings" toolTip="Increase or decrease the current tree's node diameter"/>
+						<mx:FormItem label="Node diameter">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="FILE_NODE_DIAMETER" minimum="1" maximum="20" snapInterval="2"
+										   
+										   creationComplete="FILE_NODE_DIAMETER.value = (fileSettings.getValue(SCodes.FILE_NODE_DIAMETER) as Number)"
+										   
+										   change="setFileSetting(SCodes.FILE_NODE_DIAMETER, FILE_NODE_DIAMETER.value, true)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{FILE_NODE_DIAMETER.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Iset diameter" toolTip="Increase or decrease the current tree's iset diameter">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="FILE_ISET_DIAMETER" minimum="5" maximum="40" snapInterval="3"
+										   
+										   creationComplete="FILE_ISET_DIAMETER.value = (fileSettings.getValue(SCodes.FILE_ISET_DIAMETER) as Number)"
+										   
+										   change="setFileSetting(SCodes.FILE_ISET_DIAMETER, FILE_ISET_DIAMETER.value, true)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{FILE_ISET_DIAMETER.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Level distance" toolTip="Increase or decrease the current tree's distance between levels">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="FILE_LEVEL_DISTANCE" minimum="35" maximum="120" snapInterval="5"
+										   
+										   creationComplete="FILE_LEVEL_DISTANCE.value = (fileSettings.getValue(SCodes.FILE_LEVEL_DISTANCE) as int)"
+										   
+										   change="setFileSetting(SCodes.FILE_LEVEL_DISTANCE, FILE_LEVEL_DISTANCE.value as int, true)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{FILE_LEVEL_DISTANCE.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormHeading label="Matrix settings" />
+						<mx:FormItem label="Cell vert. padding" toolTip="Increase or decrease the vertical padding inside cells of the matrix">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="FILE_CELL_PADDING_VERT" minimum="0" maximum="10" snapInterval="1"
+										   
+										   creationComplete="FILE_CELL_PADDING_VERT.value = (fileSettings.getValue(SCodes.FILE_CELL_PADDING_VERT) as Number)"
+										   
+										   change="setFileSetting(SCodes.FILE_CELL_PADDING_VERT, FILE_CELL_PADDING_VERT.value as Number, true)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{FILE_CELL_PADDING_VERT.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Cell hor. padding" toolTip="Increase or decrease the horizontal padding inside cells of the matrix">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="FILE_CELL_PADDING_HOR" minimum="0" maximum="10" snapInterval="1"
+										   
+										   creationComplete="FILE_CELL_PADDING_HOR.value = (fileSettings.getValue(SCodes.FILE_CELL_PADDING_HOR) as Number)"
+										   
+										   change="setFileSetting(SCodes.FILE_CELL_PADDING_HOR, FILE_CELL_PADDING_HOR.value as Number, true)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{FILE_CELL_PADDING_HOR.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+		
+
+					</mx:Form>
+					<s:HGroup>
+						<s:Button bottom="25" label="Use as current settings and close" cornerRadius="0" 
+								  click="setFileSettingsAsDefault()" />
+						<s:Button bottom="0" label="Reset settings" cornerRadius="0" 
+								  click="resetFileSettingsFromDefaults()" />
+						
+					</s:HGroup>
+					</s:VGroup>
+				</s:Group>
+			</s:NavigatorContent>
+			
+			<!-- Default graphic settings tab -->
+			<!--
+			<s:NavigatorContent width="100%" height="100%" label="Default graphic settings" >
+				<s:Group x="10" y="10" width="95%" height="95%">
+					<mx:Form width="100%" height="100%" >
+						<mx:FormItem label="Player colors">
+							<s:HGroup verticalAlign="middle">
+								<mx:ColorPicker id="DEFAULT_PLAYER_1_COLOR" toolTip="Player 1's Color" 
+												
+												creationComplete="DEFAULT_PLAYER_1_COLOR.selectedColor = 
+												glbSettings.getValue(SCodes.DEFAULT_PLAYER_1_COLOR) as uint;" 
+												
+												change="setGlobalSetting(SCodes.DEFAULT_PLAYER_1_COLOR,event.target.selectedColor);"/>
+								<mx:ColorPicker id="DEFAULT_PLAYER_2_COLOR" toolTip="Player 2's Color" 
+												
+												creationComplete="DEFAULT_PLAYER_2_COLOR.selectedColor = 
+												glbSettings.getValue(SCodes.DEFAULT_PLAYER_2_COLOR) as uint;"
+												
+												change="setGlobalSetting(SCodes.DEFAULT_PLAYER_2_COLOR,event.target.selectedColor);"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Default font" toolTip="Select the default Font" >
+							<s:ComboBox id="DEFAULT_FONT" width="106" height="24"
+											
+										fontFamily="{DEFAULT_FONT.selectedItem as String}"
+										
+										creationComplete="DEFAULT_FONT.selectedItem = glbSettings.getValue(SCodes.DEFAULT_FONT) as String"
+										
+										change="setGlobalSetting(SCodes.DEFAULT_FONT, DEFAULT_FONT.selectedItem);">
+								<s:dataProvider>
+									<mx:ArrayCollection  source="{FigFontManager.getAvailableFontFamilies()}">
+										<mx:sort><mx:Sort /></mx:sort>
+									</mx:ArrayCollection>
+								</s:dataProvider>
+								<s:itemRenderer>
+									<fx:Component>
+										<s:ItemRenderer>							
+											<s:Label left="5" height="22" width="85" maxDisplayedLines="1" verticalAlign="middle" fontFamily="{data}" toolTip="{data}" text="{data}" />
+										</s:ItemRenderer>						
+									</fx:Component>					
+								</s:itemRenderer>
+							</s:ComboBox>
+						</mx:FormItem>
+						<mx:FormItem label="Stroke width" toolTip="Increase or decrease the default stroke width">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="DEFAULT_STROKE_WIDTH" minimum="1" maximum="6" snapInterval="1"
+									   
+									   creationComplete="DEFAULT_STROKE_WIDTH.value = glbSettings.getValue(SCodes.DEFAULT_STROKE_WIDTH) as int"
+									   
+									   change="setGlobalSetting(SCodes.DEFAULT_STROKE_WIDTH, DEFAULT_STROKE_WIDTH.value as int)"
+									   />
+								<mx:Spacer width="5" />
+								<s:Label text="{DEFAULT_STROKE_WIDTH.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormHeading label="Tree settings"/>
+						<mx:FormItem label="Node diameter" toolTip="Increase or decrease the default node diameter">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="DEFAULT_NODE_DIAMETER" minimum="1" maximum="20" snapInterval="2"
+										   
+										   creationComplete="DEFAULT_NODE_DIAMETER.value = (glbSettings.getValue(SCodes.DEFAULT_NODE_DIAMETER) as Number)"
+										   
+										   change="setGlobalSetting(SCodes.DEFAULT_NODE_DIAMETER, DEFAULT_NODE_DIAMETER.value)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{DEFAULT_NODE_DIAMETER.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Iset diameter" toolTip="Increase or decrease the default iset diameter">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="DEFAULT_ISET_DIAMETER" minimum="5" maximum="40" snapInterval="3"
+										   
+										   creationComplete="DEFAULT_ISET_DIAMETER.value = (glbSettings.getValue(SCodes.DEFAULT_ISET_DIAMETER) as Number)"
+										   
+										   change="setGlobalSetting(SCodes.DEFAULT_ISET_DIAMETER, DEFAULT_ISET_DIAMETER.value)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{DEFAULT_ISET_DIAMETER.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Level distance" toolTip="Increase or decrease the default distance between levels">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="DEFAULT_LEVEL_DISTANCE" minimum="35" maximum="120" snapInterval="5"
+										   
+										   creationComplete="DEFAULT_LEVEL_DISTANCE.value = (glbSettings.getValue(SCodes.DEFAULT_LEVEL_DISTANCE) as int)"
+										   
+										   change="setGlobalSetting(SCodes.DEFAULT_LEVEL_DISTANCE, DEFAULT_LEVEL_DISTANCE.value as int)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{DEFAULT_LEVEL_DISTANCE.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormHeading label="Matrix settings" />
+						<mx:FormItem label="Cell vert. padding" toolTip="Increase or decrease the vertical padding inside cells of the matrix">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="DEFAULT_CELL_PADDING_VERT" minimum="0" maximum="10" snapInterval="1"
+										   
+										   creationComplete="DEFAULT_CELL_PADDING_VERT.value = (glbSettings.getValue(SCodes.DEFAULT_CELL_PADDING_VERT) as Number)"
+										   
+										   change="setGlobalSetting(SCodes.DEFAULT_CELL_PADDING_VERT, DEFAULT_CELL_PADDING_VERT.value as Number)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{DEFAULT_CELL_PADDING_VERT.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+						<mx:FormItem label="Cell hor. padding" toolTip="Increase or decrease the horizontal padding inside cells of the matrix">
+							<s:HGroup verticalAlign="middle">
+								<s:Spinner id="DEFAULT_CELL_PADDING_HOR" minimum="0" maximum="10" snapInterval="1"
+										   
+										   creationComplete="DEFAULT_CELL_PADDING_HOR.value = (glbSettings.getValue(SCodes.DEFAULT_CELL_PADDING_HOR) as Number)"
+										   
+										   change="setGlobalSetting(SCodes.DEFAULT_CELL_PADDING_HOR, DEFAULT_CELL_PADDING_HOR.value as Number)"
+										   />
+								<mx:Spacer width="5" />
+								<s:Label text="{DEFAULT_CELL_PADDING_HOR.value}"/>
+							</s:HGroup>
+						</mx:FormItem>
+					</mx:Form>
+				</s:Group>
+			</s:NavigatorContent>	
+			
+			-->
+
+		</mx:TabNavigator>
+</s:TitleWindow> 

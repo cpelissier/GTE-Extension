@@ -1,0 +1,27 @@
+Files affected in Extensive Form GUI Scaling:
+
+Main.mxml - Main class that directly or indirectly is affected by all other classes. Controls button placement, what button clicks do, etc.
+
+Game.as - High level class that is later extended to provide the basis for a strategic or extensive form game. Contains a private variable _firstPlayer, through which the entire list of players of a game can be accessed using the Player classes nextPlayer accessors. 
+
+Player.as - Stores basic information about a player, including name, id, and whether the player is a chance player. Contains a nextPlayer accessors function which points to the next player in the game (given that such a player exists).
+
+ExtensiveForm.as - Handle the lower-end functionality of representing a tree in extensive form. That is, this class deals with the non-GUI elements of representing the tree. These include internally representing players, nodes, moves, and information sets as well as ensuring perfect recall. 
+
+Node - Basic node class uses by ExtensiveForm. Contains information about other relevant nodes (e.g. father node, brother node, and children) as well information set, depth, and move data. 
+
+TreeGrid - An extension of ExtensiveForm that handles many GUI functions. For instance, this class manages the colors of nodes, the setup of the default tree, the graphical addition of moves and nodes, and the payoffs at leaf nodes. 
+
+FileSettings - Interacts with SCodes to fetch values such as default player colors. Adds a layer of abstraction between the constants and raw values found in SCodes. 
+
+SCodes - Stores the raw values of different settings such as fonts and colors. Specifies default settings (e.g. the default color for player 1 is 0xFF000, red)
+
+TreeGridActionFactory - Controls actions performed in the tree grid, such as changing payoffs.
+
+PayChangeAction - The action used to change payoffs.
+
+AbstractPainter - Abstract class storing basics methods used for drawing extensive / strategic form games. 
+
+TreeGridPainter - Handles the actual "painting" of the full tree. This is where data such as the colors of players stored in TreeGrid is put to use. 
+
+TreeGridSetPainter - Paints the information sets of a tree. 
