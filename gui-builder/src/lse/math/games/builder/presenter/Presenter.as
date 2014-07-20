@@ -714,25 +714,32 @@ package lse.math.games.builder.presenter
 		
 		/* <--- --- ACTION HANDLING --- ---> */
 		
+		
+		//CMP: Commenting out undo and redo for now
+		
+		
 		/** Restores the game to the state before applying the last action */
 		public function undo():void
-		{             
+		{   
+			/*          
 			if (_actionHandler.undo(grid)) {
 				invalidate(true, true, true);
 			} else {
 				log.add(Log.HINT, "No more operations to undo");
-			}
+			}*/
 		}
 		
 		/** Restores the game to the state before undoing the last just undone action */
 		public function redo():void
-		{             
+		{       
+			/*      
 			if (_actionHandler.redo(grid)) {
 				invalidate(true, true, true);
 			} else {
 				log.add(Log.HINT, "No more operations to redo");
-			}
+			}*/
 		}	
+		
 		
 		/** 
 		 * Creates an action from the 'getAction' function passed as parameter

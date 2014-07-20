@@ -449,15 +449,20 @@
 						ngPlayer1Input.text=controller.grid.firstPlayer.name;
 						ngPlayer2Input.text=controller.grid.firstPlayer.nextPlayer.name;
 						
-						//CMP. TODO: Implement playerList and get name from that instead of using nextPlayer.  
+						//CMP
+						if(grid.numPlayers == 3)
 						ngPlayer3Input.text=controller.grid.firstPlayer.nextPlayer.nextPlayer.name;
 						
 						Player1InputVisible=ngPlayer1.selected;
 						Player2InputVisible=ngPlayer2.selected;
+						
+						if(grid.numPlayers == 3)
 						Player3InputVisible=ngPlayer3.selected;
 						
 						_player1Name=ngPlayer1Input.text
 						_player2Name=ngPlayer2Input.text
+						
+						if(grid.numPlayers == 3)
 						_player3Name=ngPlayer3Input.text
 						
 						controller.getClickAction = getClickCallback(9);

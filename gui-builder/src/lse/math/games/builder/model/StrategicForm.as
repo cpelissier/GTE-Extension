@@ -103,6 +103,7 @@ package lse.math.games.builder.model
 		{
 			var pl1:Player = newPlayer("1");
 			var pl2:Player = newPlayer("2");
+			//var pl3:Player = newPlayer("3");
 			
 			var al:AutoLabeller = new AutoLabeller();
 			al.uniqueLabelNum = 2;

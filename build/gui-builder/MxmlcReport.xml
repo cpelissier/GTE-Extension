@@ -15,7 +15,7 @@
       <pre id="mx.core:BitmapAsset" />
       <dep id="AS3" />
     </script>
-    <script name="_util_BouncingArrowFocusSkinWatcherSetupUtil.as" mod="1403543751628" size="1085" optimizedsize="617">
+    <script name="_util_BouncingArrowFocusSkinWatcherSetupUtil.as" mod="1405880728707" size="1085" optimizedsize="617">
       <def id="_util_BouncingArrowFocusSkinWatcherSetupUtil" />
       <pre id="Object" />
       <pre id="mx.binding:IWatcherSetupUtil2" />
@@ -24,7 +24,7 @@
       <dep id="AS3" />
       <dep id="util:BouncingArrowFocusSkin" />
     </script>
-    <script name="_lse_math_games_builder_view_MatrixEditorWatcherSetupUtil.as" mod="1403543742364" size="2264" optimizedsize="1697">
+    <script name="_lse_math_games_builder_view_MatrixEditorWatcherSetupUtil.as" mod="1405880722604" size="2102" optimizedsize="1538">
       <def id="_lse_math_games_builder_view_MatrixEditorWatcherSetupUtil" />
       <pre id="Object" />
       <pre id="mx.binding:IWatcherSetupUtil2" />
@@ -33,7 +33,7 @@
       <dep id="AS3" />
       <dep id="lse.math.games.builder.view:MatrixEditor" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/model/Player.as" mod="1397126855000" size="1728" optimizedsize="832">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/model/Player.as" mod="1405779633000" size="1756" optimizedsize="867">
       <def id="lse.math.games.builder.model:Player" />
       <pre id="Object" />
       <dep id="util:Log" />
@@ -160,7 +160,7 @@
       <dep id="mx.core:mx_internal" />
       <dep id="Error" />
     </script>
-    <script name="_lse_math_games_builder_settings_SettingsInnerClass0WatcherSetupUtil.as" mod="1403543742012" size="1191" optimizedsize="579">
+    <script name="_lse_math_games_builder_settings_SettingsInnerClass0WatcherSetupUtil.as" mod="1405880722521" size="1191" optimizedsize="579">
       <def id="_lse_math_games_builder_settings_SettingsInnerClass0WatcherSetupUtil" />
       <pre id="Object" />
       <pre id="mx.binding:IWatcherSetupUtil2" />
@@ -223,7 +223,7 @@
       <dep id="mx.core:Singleton" />
       <dep id="flash.utils:Dictionary" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/io/XMLImporter.as" mod="1395015317000" size="14438" optimizedsize="9752">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/io/XMLImporter.as" mod="1405857510000" size="14438" optimizedsize="9752">
       <def id="lse.math.games.builder.io:XMLImporter" />
       <pre id="Object" />
       <dep id="lse.math.games.builder.model:Rational" />
@@ -301,7 +301,7 @@
       <dep id="AS3" />
       <dep id="flash.utils:getTimer" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/view/Main.mxml$MainInnerClass0" mod="1403466383000" size="4155" optimizedsize="3088">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/view/Main.mxml$MainInnerClass0" mod="1405781282000" size="4155" optimizedsize="3088">
       <def id="lse.math.games.builder.view:MainInnerClass0" />
       <pre id="spark.components.supportClasses:ItemRenderer" />
       <pre id="flash.events:IEventDispatcher" />
@@ -339,7 +339,7 @@
       <pre id="mx.core:FontAsset" />
       <dep id="AS3" />
     </script>
-    <script name="_Main_Styles.as" mod="1403543752210" size="26479" optimizedsize="24727">
+    <script name="_Main_Styles.as" mod="1405880729010" size="26479" optimizedsize="24727">
       <def id="_Main_Styles" />
       <pre id="Object" />
       <dep id="mx.skins.halo:DataGridColumnResizeSkin" />
@@ -445,8 +445,8 @@
       <dep id="mx.core:DeferredInstanceFromFunction" />
       <dep id="mx.graphics:LinearGradientStroke" />
       <dep id="mx.core:mx_internal" />
-      <dep id="spark.layouts:HorizontalLayout" />
       <dep id="spark.components:Group" />
+      <dep id="spark.layouts:HorizontalLayout" />
       <dep id="mx.binding:IWatcherSetupUtil2" />
       <dep id="spark.components:Label" />
       <dep id="spark.components:TextArea" />
@@ -486,7 +486,7 @@
       <pre id="mx.core:FontAsset" />
       <dep id="AS3" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/io/XMLExporter.as" mod="1395015317000" size="6064" optimizedsize="3745">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/io/XMLExporter.as" mod="1405779688000" size="6165" optimizedsize="3820">
       <def id="lse.math.games.builder.io:XMLExporter" />
       <pre id="Object" />
       <dep id="flash.utils:ByteArray" />
@@ -744,7 +744,7 @@
       <pre id="mx.core:BitmapAsset" />
       <dep id="AS3" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/model/StrategicForm.as" mod="1399237454000" size="10211" optimizedsize="5395">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/model/StrategicForm.as" mod="1405858148000" size="10211" optimizedsize="5395">
       <def id="lse.math.games.builder.model:StrategicForm" />
       <pre id="flash.events:IEventDispatcher" />
       <pre id="lse.math.games.builder.model:Game" />
@@ -887,7 +887,7 @@
       <pre id="mx.core:BitmapAsset" />
       <dep id="AS3" />
     </script>
-    <script name="_Main_FlexInit-generated.as" mod="1403543752689" size="5750" optimizedsize="5056">
+    <script name="_Main_FlexInit-generated.as" mod="1405880729288" size="5750" optimizedsize="5056">
       <def id="_Main_FlexInit" />
       <pre id="Object" />
       <dep id="spark.accessibility:TextBaseAccImpl" />
@@ -1019,7 +1019,7 @@
       <dep id="flash.geom:Point" />
       <dep id="flash.display:Shape" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/settings/SCodes.as" mod="1401136060000" size="2989" optimizedsize="1786">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/settings/SCodes.as" mod="1405857069000" size="2989" optimizedsize="1786">
       <def id="lse.math.games.builder.settings:SCodes" />
       <pre id="Object" />
       <dep id="lse.math.games.builder.settings:UserSettings" />
@@ -1145,7 +1145,7 @@
       <pre id="mx.core:SpriteAsset" />
       <dep id="AS3" />
     </script>
-    <script name="_lse_math_games_builder_view_MainWatcherSetupUtil.as" mod="1403543749153" size="3925" optimizedsize="3377">
+    <script name="_lse_math_games_builder_view_MainWatcherSetupUtil.as" mod="1405880727203" size="3925" optimizedsize="3377">
       <def id="_lse_math_games_builder_view_MainWatcherSetupUtil" />
       <pre id="Object" />
       <pre id="mx.binding:IWatcherSetupUtil2" />
@@ -1403,7 +1403,7 @@
       <pre id="mx.core:BitmapAsset" />
       <dep id="AS3" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/view/MatrixEditor.mxml" mod="1403475652000" size="40632" optimizedsize="23828">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/view/MatrixEditor.mxml" mod="1405880685000" size="42357" optimizedsize="24624">
       <def id="lse.math.games.builder.view:MatrixEditor" />
       <pre id="flash.events:IEventDispatcher" />
       <pre id="mx.binding:IBindingClient" />
@@ -1411,6 +1411,7 @@
       <dep id="lse.math.games.builder.model:Rational" />
       <dep id="lse.math.games.builder.settings:UserSettings" />
       <dep id="spark.components:TextInput" />
+      <dep id="lse.math.games.builder.view:MatrixEditor__embed__font_myFontFamily_medium_normal_421222099" />
       <dep id="spark.events:TextOperationEvent" />
       <dep id="mx.utils:StringUtil" />
       <dep id="Math" />
@@ -1419,7 +1420,6 @@
       <dep id="spark.components:Label" />
       <dep id="spark.components:TextArea" />
       <dep id="lse.math.games.builder.model:StrategicForm" />
-      <dep id="lse.math.games.builder.view:MatrixEditor__embed__font_myFontFamily_medium_normal_421222193" />
       <dep id="mx.binding:Binding" />
       <dep id="AS3" />
       <dep id="__AS3__.vec:Vector" />
@@ -1492,7 +1492,7 @@
       <dep id="lse.math.games.builder.presenter:Presenter" />
       <dep id="mx.events:PropertyChangeEvent" />
     </script>
-    <script name="_Main_mx_managers_SystemManager.as" mod="1403543752693" size="4659" optimizedsize="3885">
+    <script name="_Main_mx_managers_SystemManager.as" mod="1405880729290" size="4659" optimizedsize="3885">
       <def id="_Main_mx_managers_SystemManager" />
       <pre id="mx.core:IFlexModuleFactory" />
       <pre id="mx.managers:SystemManager" />
@@ -1507,7 +1507,7 @@
       <dep id="mx.core:CrossDomainRSLItem" />
       <dep id="mx.preloaders:SparkDownloadProgressBar" />
     </script>
-    <script name="_lse_math_games_builder_settings_SettingsWatcherSetupUtil.as" mod="1403543741742" size="1863" optimizedsize="1304">
+    <script name="_lse_math_games_builder_settings_SettingsWatcherSetupUtil.as" mod="1405880722463" size="1863" optimizedsize="1304">
       <def id="_lse_math_games_builder_settings_SettingsWatcherSetupUtil" />
       <pre id="Object" />
       <pre id="mx.binding:IWatcherSetupUtil2" />
@@ -1689,7 +1689,7 @@
       <pre id="mx.core:BitmapAsset" />
       <dep id="AS3" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/viewmodel/TreeGrid.as" mod="1403458944000" size="11014" optimizedsize="5626">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/viewmodel/TreeGrid.as" mod="1405857601000" size="11014" optimizedsize="5626">
       <def id="lse.math.games.builder.viewmodel:TreeGrid" />
       <pre id="lse.math.games.builder.model:ExtensiveForm" />
       <dep id="lse.math.games.builder.settings:UserSettings" />
@@ -1883,7 +1883,7 @@
       <dep id="flash.display:Stage" />
       <dep id="mx.managers:ISystemManagerChildManager" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/view/Main.mxml" mod="1403466383000" size="112325" optimizedsize="73426">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/view/Main.mxml" mod="1405781282000" size="112388" optimizedsize="73480">
       <def id="lse.math.games.builder.view:Main" />
       <pre id="spark.components:Application" />
       <pre id="flash.events:IEventDispatcher" />
@@ -2071,13 +2071,13 @@
       <pre id="mx.resources:ResourceBundle" />
       <dep id="AS3" />
     </script>
-    <script name="lse/math/games/builder/fig/FigFontManager_FontHelveticaNarrowItalic.as" mod="1395015317000" size="1090" optimizedsize="304">
-      <def id="lse.math.games.builder.fig:FigFontManager_FontHelveticaNarrowItalic" />
+    <script name="lse/math/games/builder/view/MatrixEditor__embed__font_myFontFamily_medium_normal_421222099.as" mod="1395015317000" size="1191" optimizedsize="350">
+      <def id="lse.math.games.builder.view:MatrixEditor__embed__font_myFontFamily_medium_normal_421222099" />
       <pre id="mx.core:FontAsset" />
       <dep id="AS3" />
     </script>
-    <script name="lse/math/games/builder/view/MatrixEditor__embed__font_myFontFamily_medium_normal_421222193.as" mod="1395015317000" size="1191" optimizedsize="350">
-      <def id="lse.math.games.builder.view:MatrixEditor__embed__font_myFontFamily_medium_normal_421222193" />
+    <script name="lse/math/games/builder/fig/FigFontManager_FontHelveticaNarrowItalic.as" mod="1395015317000" size="1090" optimizedsize="304">
+      <def id="lse.math.games.builder.fig:FigFontManager_FontHelveticaNarrowItalic" />
       <pre id="mx.core:FontAsset" />
       <dep id="AS3" />
     </script>
@@ -2176,7 +2176,7 @@
       <dep id="mx.core:IFlexModuleFactory" />
       <dep id="AS3" />
     </script>
-    <script name="_lse_math_games_builder_view_MainInnerClass0WatcherSetupUtil.as" mod="1403543749458" size="1224" optimizedsize="659">
+    <script name="_lse_math_games_builder_view_MainInnerClass0WatcherSetupUtil.as" mod="1405880727379" size="1224" optimizedsize="659">
       <def id="_lse_math_games_builder_view_MainInnerClass0WatcherSetupUtil" />
       <pre id="Object" />
       <pre id="mx.binding:IWatcherSetupUtil2" />
@@ -2190,7 +2190,7 @@
       <pre id="mx.core:FontAsset" />
       <dep id="AS3" />
     </script>
-    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/presenter/Presenter.as" mod="1395015317000" size="21277" optimizedsize="11003">
+    <script name="/home/christian/Dropbox/PROJ/GTE-Extension/gui-builder/src/lse/math/games/builder/presenter/Presenter.as" mod="1405857302000" size="21121" optimizedsize="10873">
       <def id="lse.math.games.builder.presenter:Presenter" />
       <pre id="flash.events:IEventDispatcher" />
       <pre id="Object" />
@@ -2273,7 +2273,7 @@
       <pre id="mx.resources:ResourceBundle" />
       <dep id="AS3" />
     </script>
-    <script name="_lse_math_games_builder_view_OutputWindowSkinWatcherSetupUtil.as" mod="1403543751674" size="1187" optimizedsize="618">
+    <script name="_lse_math_games_builder_view_OutputWindowSkinWatcherSetupUtil.as" mod="1405880728732" size="1187" optimizedsize="618">
       <def id="_lse_math_games_builder_view_OutputWindowSkinWatcherSetupUtil" />
       <pre id="Object" />
       <pre id="mx.binding:IWatcherSetupUtil2" />

@@ -69,6 +69,12 @@ package lse.math.games.builder.io
 			setting.appendChild(hexStr(fileSettings.getValue(SCodes.FILE_PLAYER_2_COLOR) as uint));
 			parent.appendChild(setting);
 			
+			//CMP
+			setting = <color />
+			setting.@player = "3";
+			setting.appendChild(hexStr(fileSettings.getValue(SCodes.FILE_PLAYER_3_COLOR) as uint));
+			parent.appendChild(setting);
+			
 			setting = <font />
 			setting.appendChild(fileSettings.getValue(SCodes.FILE_FONT) as String);
 			parent.appendChild(setting);
@@ -265,7 +271,8 @@ package lse.math.games.builder.io
 				var child:XML = <strategy/>;
 				
 				//Set the player attribute
-				child.@player = player.name;
+				//CMP: Label players by id instead of name
+				child.@player = player.id;
 				
 				//Set the content with the name of each strategy
 				var childContent:String = "{ ";

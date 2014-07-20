@@ -194,13 +194,15 @@ package lse.math.games.builder.settings
 			settings.setValue(STORE_SETTINGS_LOCALLY, false);
 			settings.setValue(DISPLAY_OUTPUT_INTERNALLY, false);
 			settings.setValue(MINIMUM_BUFFER_SIZE, 10);
-			settings.setValue(AUTOSAVE_ENABLED, true);
+			
+			//CMP: Turn off autosave for now
+			settings.setValue(AUTOSAVE_ENABLED, false);
 			settings.setValue(AUTOSAVE_INTERVAL, 60);
 			//GRAPHIC SETTINGS
 			settings.setValue(DEFAULT_PLAYER_1_COLOR, 0xFF0000);
 			settings.setValue(DEFAULT_PLAYER_2_COLOR, 0x0000FF);
-			//CMP: Player 3 Color : green
-			settings.setValue(DEFAULT_PLAYER_3_COLOR, 0x00FF00);
+			//CMP: Player 3 Color : darker green
+			settings.setValue(DEFAULT_PLAYER_3_COLOR, 0x0FA30F);
 			settings.setValue(DEFAULT_FONT, "Times");
 			settings.setValue(DEFAULT_STROKE_WIDTH, 1);
 			settings.setValue(DEFAULT_NODE_DIAMETER, new Number(5));

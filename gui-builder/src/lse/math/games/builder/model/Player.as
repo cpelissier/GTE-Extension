@@ -21,7 +21,7 @@ package lse.math.games.builder.model
 		
 		private var _name:String;
 		
-		private var _id:int; 
+		private var _id:int = 1; 
 		
 		private var _nextPlayer:Player = null;
 		//private var _prevPlayer:Player = null;
@@ -48,6 +48,8 @@ package lse.math.games.builder.model
 					while (prev.nextPlayer != null) 
 					{
 						prev = prev.nextPlayer;
+						_id++;
+						
 					}
 					prev._nextPlayer = this;
 					//_prevPlayer = prev;
@@ -74,13 +76,13 @@ package lse.math.games.builder.model
             // have only access to successors in player list, so
             // superkludgy counting down from 2 (= total number of players)
             // to infer current player number
-            if (nextPlayer == null)
+           /* if (nextPlayer == null)
                 return "2";
             else { if (nextPlayer.nextPlayer == null)
                 return "1";
             else 
                 return "0";
-            }
+            }*/
 //            var i:int = 2;  // replace 2 by total number of players
 //            var nextp:Player = nextPlayer;
 //			while (nextp != null) {
@@ -88,6 +90,8 @@ package lse.math.games.builder.model
 //                i--;
 //            }
 //            return ""+i;
+
+			return _id.toString();
 		}
 		
 		/** Next player */
