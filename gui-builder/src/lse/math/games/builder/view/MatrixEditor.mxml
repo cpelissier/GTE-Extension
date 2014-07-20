@@ -60,6 +60,13 @@
 			[Bindable]
 			private var pl2PayMapStr:String; 
 			
+			//cmp: for example purposes, sample 3-player strings:
+			[Bindable]
+			private var exampleStr1:String;
+			
+			[Bindable]
+			private var exampleStr2:String;
+			
 			//cmp
 			[Bindable]
 			private var alpha3:String; //String with the strategies of pl2
@@ -131,7 +138,7 @@
 				populate(0);
 				populate(1);
 				//CMP. Populate for P3.
-				populate(2);
+				//populate(2);
 
 				if (pl1NumStr == 1 && pl2NumStr == 1) { // 1x1 game from extensive form
 					setDefaultStrategicForm();
@@ -168,6 +175,9 @@
 				pl1PayMapStr = "1 2 \n0 4";
 				pl2PayMapStr = "3 0 \n0 1";
 				pl3PayMapStr = "5 6 \n7 8"
+				
+				exampleStr1 = "1,3,5 2,0,6 \n0,0,7 4,1,8"
+				exampleStr2 = "1,2,4 5,4,6 \n9,2,8 1,7,2"
 			}
 
 			public function setMode(isZero:Boolean):void {
@@ -312,8 +322,7 @@
 				alpha3 = "";
 				for(i = 0; i<pl3NumStr; i++)
 				{
-					if(i<strVec3.length) 
-						stratName = strVec3[i].toString()
+					stratName = al.getNextAutoLabel_Player3(_matrix);
 					
 					alpha3+= (stratName+delimeter);
 				}
@@ -980,18 +989,11 @@
                         width="100%" widthInChars="22"
                         text="{alpha1}" fontSize="16" change="dataChanged=true;"
                         enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
-                            pl2StratInput.setFocus();" 
+                           " 
                         contentBackgroundColor="{p1cbg}" />
 				</s:HGroup>
 
-				<s:Label height="20" color="#2323E6" text="Payoffs"
-                      fontSize="16" verticalAlign="middle"/>
-				<s:TextArea tabIndex="5" editable="{p1_payoffs_editable}" id="pl1PayMapStrBox"
-                    width="100%" widthInChars="30" fontFamily="myFontFamily"
-                    heightInLines="10" lineBreak="explicit"
-                    text="{pl1PayMapStr}" fontSize="20"
-                    change="pl1PayMapStr = pl1PayMapStrBox.text;dataChanged=true;"
-                    contentBackgroundColor="{p1cbg}"/>
+				
 
 			</s:VGroup>
 			
@@ -1026,21 +1028,15 @@
                         widthInChars="22" text="{alpha2}"
                         fontSize="16" change="dataChanged=true;" 
                         enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
-                            pl1PayMapStrBox.setFocus();" 
+                           " 
                         contentBackgroundColor="{p2_strat_cbg}" />
 				</s:HGroup>
 
-				<s:Label height="20" color="#2323E6"
-                text="Payoffs" fontSize="16" verticalAlign="middle"/>
-				<s:TextArea tabIndex="6" editable="{p2_payoffs_editable}" id="pl2PayMapStrBox"
-                    width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="10" lineBreak="explicit" 
-                    text="{pl2PayMapStr}"
-                    fontSize="20"
-                    change="pl2PayMapStr = pl2PayMapStrBox.text;dataChanged=true;"
-                    contentBackgroundColor="{p2_text_cbg}" /> 
+				
 			</s:VGroup>
 			
-			<!-- CMP: Player 3 -->
+			<!-- 
+			CMP: Player 3 -->
 			
 			<s:VGroup width="33%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
 			
@@ -1058,7 +1054,7 @@
                            pl1StratInput.setFocus();"
                     change="dataChanged=true;" contentBackgroundColor="{p3_num_cbg}" />
 				<s:Label height="20" width="100%"
-                    text="(cells)" fontSize="14" verticalAlign="middle"/>
+                    text="(panels)" fontSize="14" verticalAlign="middle"/>
 			
 			</s:HGroup>	
 			
@@ -1068,33 +1064,99 @@
                     verticalAlign="middle"/>
 				<s:TextInput tabIndex="4" editable="{p3_strat_editable}"
                     width="100%" id="pl3StratInput"
-                    widthInChars="22" text="{alpha3}"
+                    widthInChars="22" text="C D"
                     fontSize="16" change="dataChanged=true;" 
                     enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
-                        pl1PayMapStrBox.setFocus();" 
+                        " 
                     contentBackgroundColor="{p2_strat_cbg}" />
 			</s:HGroup>
 
-			<s:Label height="20" color="#2323E6"
-            text="Payoffs" fontSize="16" verticalAlign="middle"/>
-			<s:TextArea tabIndex="6" editable="{p3_payoffs_editable}" id="pl3PayMapStrBox"
-                width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="10" lineBreak="explicit" 
-                text="{pl3PayMapStr}"
-                fontSize="20"
-                change="pl3PayMapStr = pl3PayMapStrBox.text;dataChanged=true;"
-                contentBackgroundColor="{p2_text_cbg}" /> 
+		
+	
 		</s:VGroup>
+		
+
+						
+	</s:HGroup>
+	
+			<s:VGroup width="100%" paddingBottom="25" paddingLeft="5" paddingRight="5" paddingTop="25">
+				<s:HGroup width="100%" horizontalAlign="center">
+                <s:Label height="30" color="#2323E6" text="Payoffs"
+                      fontSize="30" verticalAlign="middle"/>
+				</s:HGroup>
+				
+			</s:VGroup>
+	
+	
 			
-		</s:HGroup>
-			<s:VGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+			<s:HGroup width="100%" gap="10" >
+			
+				<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+						
+	                
+							<s:TextArea tabIndex="6" editable="{p2_payoffs_editable}" id="pl2PayMapStrBox"
+			                    width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="10" lineBreak="explicit" 
+			                    text="{exampleStr1}"
+			                    fontSize="20"
+			                    change="pl2PayMapStr = pl2PayMapStrBox.text;dataChanged=true;"
+			                    contentBackgroundColor="{p2_text_cbg}" /> 
+	                    
+	                   
+	                    
+	                  
+	                    
+	          </s:VGroup>
+	          
+	         <s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+						
+							<s:TextArea tabIndex="6" editable="{p1_payoffs_editable}" id="pl1PayMapStrBox"
+			                    width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="10" lineBreak="explicit" 
+			                    text="{exampleStr2}"
+			                    fontSize="20"
+			                    change="pl1PayMapStr = pl1PayMapStrBox.text;dataChanged=true;"
+			                    contentBackgroundColor="{p2_text_cbg}" /> 
+	                              
+	          </s:VGroup>
+          
+        </s:HGroup>
+        
+        <s:HGroup width="100%" gap="10" >
+			
+				<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+				<s:HGroup width="100%" horizontalAlign="center">
+                <s:Label height="30" color="#0FA30F" text="P3:C"
+                      fontSize="25" verticalAlign="middle"/>
+				</s:HGroup>
+				
+			</s:VGroup>
+	          
+	         <s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+				<s:HGroup width="100%" horizontalAlign="center">
+                <s:Label height="30" color="#0FA30F" text="P3:D"
+                      fontSize="25" verticalAlign="middle"/>
+				</s:HGroup>
+				
+			</s:VGroup>
+          
+        </s:HGroup>
+        
+        
+        <s:VGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
 				<s:HGroup width="100%" horizontalAlign="center">
                 <s:Button tabIndex="7" enabled="{p1_payoffs_editable}"
                     label="Confirm changes and align payoffs" cornerRadius="0"
                     click="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);"
                     />
 				</s:HGroup>
-			</s:VGroup>
 				
+				
+				
+		</s:VGroup>
+			
+            
+			
+
 	</s:VGroup>
+	
 	
 </s:VGroup>
