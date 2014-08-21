@@ -1545,7 +1545,7 @@
 							
 							<!-- //CMP: -->
 			
-							<mx:Button id="ngMovesPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/font_2.png')"  
+							<mx:Button id="ngMovesPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/font_3.png')"  
 									   click="setExtensiveStep(3);ngMovesPlayer=3;;PromptTextInputCanvas.show(onReturnFromPromptMoves, controller.grid.getPlayerMoves(controller.grid.firstPlayer.nextPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_3_COLOR') as Number);"
 									   toolTip="Assign MOVES to PLAYER 3."/>		   
 							
@@ -1564,7 +1564,7 @@
 									   toolTip="Assign PAYOFFS to PLAYER 2."/>
 									   
 							<!-- //CMP: -->
-							<mx:Button id="ngPayoffsPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/brick_2.png')"  
+							<mx:Button id="ngPayoffsPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/brick_3.png')"  
 									   click="setExtensiveStep(4);ngPayoffsPlayer=3;PromptTextInputCanvas.show(onReturnFromPromptPayoffs, controller.grid.getPlayerPayoffs(controller.grid.firstPlayer.nextPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_3_COLOR') as Number);" 
 									   toolTip="Assign PAYOFFS to PLAYER 3."/>
 									   

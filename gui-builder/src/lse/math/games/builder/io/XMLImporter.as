@@ -85,7 +85,8 @@ package lse.math.games.builder.io
 		 * List of versions:
 		 * <ul><li> -1 : Undetermined version </li>
 		 * <li> 0 : Old tree version (Mark Egesdal's) </li>
-		 * <li> 0.1 : First draft of unified XML version (Karen Bletzer's) </li></ul>
+		 * <li> 0.1 : First draft of unified XML version (Karen Bletzer's) </li>
+		 * <li> 0.3 : First draft of 3-player XML version </li></ul>
 		 */ 
 		public function get version():Number { return _version; }
 		
@@ -227,8 +228,8 @@ package lse.math.games.builder.io
 		//Loads from the header the player information
 		private function loadPlayers():void
 		{
-			if(_numPlayers != 2) //TODO: 3PL
-				log.add(Log.ERROR_THROW, "Currently just games with 2 players are supported");
+			if(_numPlayers != 3) //CMP: 3 Player Version
+				log.add(Log.ERROR_THROW, "Currently just games with 3 players are supported");
 			
 			if(_numPlayers == 0)
 				log.add(Log.ERROR, "Warning: The game contained no information about players. " +
@@ -584,6 +585,7 @@ package lse.math.games.builder.io
 			for each(var pl:Player in players)
 			{
 				var str:String = strats.(@player==pl.name)[0];
+				trace("str" + str);
 				var params:Array = str.split("\"");
 				
 				var count:int = 0;
