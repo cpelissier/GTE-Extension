@@ -33,8 +33,6 @@ package lse.math.games.builder.model
 		private var _outcome:Outcome;
 		private var _parameterPlayer1:String=null;
 		private var _parameterPlayer2:String=null;
-		//cmp: added this so TreeGridPainter assignOutcomeLabel function works.
-		private var _parameterPlayer3:String=null;
 		
 		private var log:Log = Log.instance;
 		
@@ -55,10 +53,6 @@ package lse.math.games.builder.model
 
 		public function get parameterPlayer2():String { return _parameterPlayer2; }
 		public function set parameterPlayer2(value:String):void { _parameterPlayer2 = value; }
-		
-		//cmp
-		public function get parameterPlayer3():String { return _parameterPlayer3; }
-		public function set parameterPlayer3(value:String):void { _parameterPlayer3 = value; }
 
 		
 		/** Determines the mode of the node */

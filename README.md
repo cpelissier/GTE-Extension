@@ -1,4 +1,4 @@
-GTE - Game Theory Explorer
+# GTE - Game Theory Explorer
 
 The Game Theory Explorer (GTE) is a graphical user interface that allows the
 interactive construction of small to medium size games in extensive and

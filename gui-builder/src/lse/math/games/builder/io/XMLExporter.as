@@ -30,7 +30,7 @@ package lse.math.games.builder.io
 	//TODO: In the future, write node and iset names & maybe? payoffs in non-outcomes
 	public class XMLExporter
 	{			
-		private var VERSION:Number = 0.3;
+		private var VERSION:Number = 0.1;
 		
 		private var log:Log = Log.instance;
 		
@@ -42,8 +42,7 @@ package lse.math.games.builder.io
 			if(game is ExtensiveForm)
 				return writeTree(game as ExtensiveForm);
 			else if(game is StrategicForm)
-				//return writeMatrix(game as StrategicForm);
-				  return exportSampleGame();
+				return writeMatrix(game as StrategicForm);
 			else {
 				log.add(Log.ERROR_THROW, "Tried to save a game with no form");
 				return null;
@@ -68,12 +67,6 @@ package lse.math.games.builder.io
 			setting = <color />
 			setting.@player = "2";
 			setting.appendChild(hexStr(fileSettings.getValue(SCodes.FILE_PLAYER_2_COLOR) as uint));
-			parent.appendChild(setting);
-			
-			//CMP
-			setting = <color />
-			setting.@player = "3";
-			setting.appendChild(hexStr(fileSettings.getValue(SCodes.FILE_PLAYER_3_COLOR) as uint));
 			parent.appendChild(setting);
 			
 			setting = <font />
@@ -259,117 +252,6 @@ package lse.math.games.builder.io
 			return xml;
 		}
 		
-		//CMP: Temporary function. Exports the default game in the strategic view to an XML file. 
-		public function exportSampleGame(): XML
-		{
-			
-			//This is the sample 2x2x3 game shown by default in the Strategic Form view. TODO: Implement functionality to internally represent 3-player games and convert between
-			//extensive and strategic form. 
-			var pl1NumStr:int = 2;
-			var	pl2NumStr:int = 2;
-			var	pl3NumStr:int = 3;
-			
-			var pl1PayMapStr:String = "1 2\n0 4//3 5\n7 9//11 12\n13 14";
-			var pl2PayMapStr:String = "3 0\n0 1//4 6\n8 10//15 16\n17 18";
-			var	pl3PayMapStr:String = "5 6\n4 3//4 3\n2 1//19 20\n21 22";
-			
-			var xml:XML = 
-				<gte>
-					<gameDescription/>
-					<display/>
-					<players/>
-					<strategicForm/>				
-				</gte>;
-			
-			xml.@version = VERSION;
-			
-			//Write display settings
-			writeDispSettings(xml.display, false);
-			
-			//This mimics the for loop where player names are looped over
-			var playerNode1:XML = <player />;
-			playerNode1.@playerId = "1";
-			playerNode1.appendChild("I");
-			xml.players.appendChild(playerNode1);
-			
-			var playerNode2:XML = <player />;
-			playerNode2.@playerId = "2";
-			playerNode2.appendChild("II");
-			xml.players.appendChild(playerNode2);
-			
-			var playerNode3:XML = <player />;
-			playerNode3.@playerId = "3";
-			playerNode3.appendChild("III");
-			xml.players.appendChild(playerNode3);
-			
-			//Write the size attribute by looking at the number of strategies each player has
-			var sizeAttribute:String = "{ " + pl1NumStr + " " + pl2NumStr + " " + pl3NumStr + " }" ;
-			xml.strategicForm.@size = sizeAttribute; 
-			
-			//Write the strategies of each player. Note that these are hardcoded here, though they are generated dynamically by the Autolabeller in MatrixEditor.mxml. 
-			var child1:XML = <strategy/>; 
-			child1.@player = "1";
-			var childContent1:String = "{ \"A\" \"B\" }"
-			child1.appendChild(childContent1);
-			xml.strategicForm.appendChild(child1);
-			
-			var child2:XML = <strategy/>; 
-			child2.@player = "2";
-			var childContent2:String = "{ \"a\" \"b\" }"
-			child2.appendChild(childContent2);
-			xml.strategicForm.appendChild(child2);
-			
-			var child3:XML = <strategy/>; 
-			child3.@player = "3";
-			var childContent3:String = "{ \"C\" \"D\" \"E\" }"
-			child3.appendChild(childContent3);
-			xml.strategicForm.appendChild(child3);
-			
-			//Parse payoffs and write to XML
-			
-			var panel_text_p1:Array = pl1PayMapStr.split("//");
-			var panel_text_p2:Array = pl2PayMapStr.split("//");
-			var panel_text_p3:Array = pl3PayMapStr.split("//");
-			
-			
-			var contents:String = "";
-			
-			//Format: Payoffs are written as follows: P1's strategies are iterated over first (the most internal loop), followed by P2's strategies, followed by
-			//P3's strategies. In this way, P1's strategy changes every iteration, P2's strategy changes every @pl1NumStr iterations, and P3's strategy changes
-			//every @pl2NumStr * @pl1NumStr iterations. Payoffs are comma separated in the format P1,P2,P3, and each new payoff tuple is separated by a newline. 
-			
-			//loop over panels
-			for (var panel:int =0; panel < pl3NumStr; panel++)
-			{
-				var p1Rows:Array = panel_text_p1[panel].split("\n");
-				var p2Rows:Array = panel_text_p2[panel].split("\n");
-				var p3Rows:Array = panel_text_p3[panel].split("\n");
-				//loop over rows
-				for(var row:int =0; row < pl2NumStr; row++)
-				{
-					var p1Columns:Array = p1Rows[row].split(" ");
-					var p2Columns:Array = p2Rows[row].split(" ");
-					var p3Columns:Array = p3Rows[row].split(" ");
-					//loop over columns
-					for(var column:int =0; column < pl1NumStr; column++)
-					{
-						contents += p1Columns[column] + "," + p2Columns[column] + "," + p3Columns[column];
-						contents += "\n";
-					}
-					
-				}
-			}
-			
-			var child:XML = <payoffs/>;
-			child.appendChild(contents);
-			
-			xml.strategicForm.appendChild(child);
-			
-			return xml;
-			
-		}
-		
-		
 		// Write each players' strategies and the size attribute 
 		private function writeSizeAndStrategies(parent:XMLList, matrix:StrategicForm):void
 		{			
@@ -383,7 +265,7 @@ package lse.math.games.builder.io
 				var child:XML = <strategy/>;
 				
 				//Set the player attribute
-				//CMP: Label players by id instead of name
+				//CMP: use id instead of name
 				child.@player = player.id;
 				
 				//Set the content with the name of each strategy
@@ -404,42 +286,48 @@ package lse.math.games.builder.io
 			for (i = 0; i<strategies.length; i++)
 				sizeAttribute += (strategies[i] as Vector.<Strategy>).length + " ";
 			sizeAttribute += "}";
-			trace("SIZE ATTRIBUTE"+  sizeAttribute);
+			
 			parent.@size = sizeAttribute;
 			
 			//Write payoff matrixes
 			var payMap:Dictionary = matrix.payMatrixMap;
 			
-			player = matrix.firstPlayer;
-			for( i = 0; i<matrix.numPlayers; i++)
+			var player1:Player = matrix.firstPlayer;
+			var player2:Player = player1.nextPlayer;
+			
+			child = <payoffs/>;
+			//child.@player = player.name;
+			var plPayoffs1:Object = payMap[player1];
+			var plPayoffs2:Object = payMap[player2];
+			
+			var contents:String = "";
+			
+			var width:int = (strategies[0] as Vector.<Strategy>).length; //Num strat of 1st pl
+			var height:int = 1; //The height is equal to multiplying the num of strat
+								//of each player but the first one
+			for(var j:int = 1; j<strategies.length; j++)
+				height *= (strategies[j] as Vector.<Strategy>).length;
+			
+			//Loop over P2's strategies 
+			for(j = 0; j<height; j++)
 			{
-				child = <payoffs/>;
-				child.@player = player.name;
-				var plPayoffs:Object = payMap[player];
-				
-				var contents:String = "";
-				
-				var width:int = (strategies[0] as Vector.<Strategy>).length; //Num strat of 1st pl
-				var height:int = 1; //The height is equal to multiplying the num of strat
-									//of each player but the first one
-				for(var j:int = 1; j<strategies.length; j++)
-					height *= (strategies[j] as Vector.<Strategy>).length;
-				
-				for(j = 0; j<height; j++)
+				//Loop over P1's strategies
+				for(var k:int = 0; k<width; k++)
 				{
-					for(var k:int = 0; k<width; k++)
-					{
-						contents += plPayoffs[keyForCoords(j,k,strategies)];
-						if(k!=width-1)
-							contents += " ";
-					}
+					//Write P1 payoff, followed by a comma, followed by P2 payoff, followed by a newline.
+					contents += plPayoffs1[keyForCoords(j,k,strategies)];
+					contents += ",";
+					contents += plPayoffs2[keyForCoords(j,k,strategies)];
 					contents += "\n";
 				}
-				
-				child.appendChild(contents);
-				parent.appendChild(child);
-				player = player.nextPlayer;
+				//contents += "\n";
 			}
+			
+			child.appendChild(contents);
+			parent.appendChild(child);
+			
+			
+			
 		}
 		
 		/*

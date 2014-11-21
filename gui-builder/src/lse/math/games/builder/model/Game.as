@@ -8,8 +8,6 @@ package lse.math.games.builder.model
 	public class Game
 	{
 		protected var _firstPlayer:Player = null;
-	
-		protected var _playerList: PlayerList = new PlayerList();
 
 		/** Player who normally moves first in the game */
 		public function set firstPlayer(player:Player):void { _firstPlayer = player; }
@@ -29,12 +27,6 @@ package lse.math.games.builder.model
 			
 			return count;
 		}
-		
-		
-//		public function get numPlayers():int 
-//		{
-//			return _playerList.size();
-//		}
 		
 	}
 }

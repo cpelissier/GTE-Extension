@@ -279,11 +279,9 @@ package lse.math.games.builder.viewmodel
 			g.drawRoundRect(x, y, width, height, this.scale * grid.isetDiameter);
 		}
 		
-		//cmp
 		private function getSetColor(h:Iset, grid:TreeGrid):uint
 		{
-			//Fix this later for readability. 
-			var color:uint = h.player == Player.CHANCE ? 0x000000 : (grid.firstPlayer == h.player ? grid.player1Color : (grid.firstPlayer.nextPlayer == h.player ? grid.player2Color : grid.player3Color ) );			
+			var color:uint = h.player == Player.CHANCE ? 0x000000 : (grid.firstPlayer == h.player ? grid.player1Color : grid.player2Color);			
 			if (h == grid.mergeBase) { 
 				color ^= 0xFFFFFF; // complement
 				color &= 0x7FFF7F; // not too bright, and greenish

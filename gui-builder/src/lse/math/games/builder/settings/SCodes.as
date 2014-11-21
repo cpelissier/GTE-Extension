@@ -61,12 +61,6 @@ package lse.math.games.builder.settings
 		public static const DEFAULT_PLAYER_2_COLOR:String = "DEFAULT_PLAYER_2_COLOR";
 		
 		/** 
-		 * uint with player 3's color 
-		 * <p><b>Default:</b> Green
-		 */
-		public static const DEFAULT_PLAYER_3_COLOR:String = "DEFAULT_PLAYER_3_COLOR";
-		
-		/** 
 		 * String with the default font family to be used 
 		 * <p><b>Default:</b> Times
 		 */
@@ -117,9 +111,6 @@ package lse.math.games.builder.settings
 		
 		/** uint with player 2's color */
 		public static const FILE_PLAYER_2_COLOR:String = "FILE_PLAYER_2_COLOR";
-		
-		/** uint with player 3's color */
-		public static const FILE_PLAYER_3_COLOR:String = "FILE_PLAYER_3_COLOR";
 		
 		/** String with the FILE font family to be used */
 		public static const FILE_FONT:String = "FILE_FONT"; 
@@ -194,15 +185,11 @@ package lse.math.games.builder.settings
 			settings.setValue(STORE_SETTINGS_LOCALLY, false);
 			settings.setValue(DISPLAY_OUTPUT_INTERNALLY, false);
 			settings.setValue(MINIMUM_BUFFER_SIZE, 10);
-			
-			//CMP: Turn off autosave for now
-			settings.setValue(AUTOSAVE_ENABLED, false);
+			settings.setValue(AUTOSAVE_ENABLED, true);
 			settings.setValue(AUTOSAVE_INTERVAL, 60);
 			//GRAPHIC SETTINGS
 			settings.setValue(DEFAULT_PLAYER_1_COLOR, 0xFF0000);
 			settings.setValue(DEFAULT_PLAYER_2_COLOR, 0x0000FF);
-			//CMP: Player 3 Color : darker green
-			settings.setValue(DEFAULT_PLAYER_3_COLOR, 0x0FA30F);
 			settings.setValue(DEFAULT_FONT, "Times");
 			settings.setValue(DEFAULT_STROKE_WIDTH, 1);
 			settings.setValue(DEFAULT_NODE_DIAMETER, new Number(5));

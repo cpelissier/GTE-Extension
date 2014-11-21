@@ -27,8 +27,6 @@ package lse.math.games.builder.model
 		
 		private var log:Log = Log.instance;
 		
-		
-		
 		// TODO: selected node		
 		// TODO: optimize reduced form, less object creation wasted... get rid of sorting when there are no multi-row isets in the sequence		
 		
@@ -103,7 +101,6 @@ package lse.math.games.builder.model
 		{
 			var pl1:Player = newPlayer("1");
 			var pl2:Player = newPlayer("2");
-			var pl3:Player = newPlayer("3");
 			
 			var al:AutoLabeller = new AutoLabeller();
 			al.uniqueLabelNum = 2;
@@ -116,11 +113,7 @@ package lse.math.games.builder.model
 			st2.name = al.getNextAutoLabel_Player2(this);
 			addStrategy(st2);	
 			
-			var st3:Strategy = new Strategy(pl3);
-			st3.name = al.getNextAutoLabel_Player3(this);
-			addStrategy(st3);	
-			
-			addPayoff([st1, st2, st3], null, Rational.ONE);
+			addPayoff([st1, st2], null, Rational.ONE);
 		}
 		
 		/** Creates a new player, assigning it as moving next of the last one currently existing in this game */

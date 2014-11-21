@@ -23,7 +23,6 @@ package lse.math.games.builder.viewmodel.action
 		private var _nodeId:int;
 		private var _pay1:Rational;
 		private var _pay2:Rational;
-		private var _pay3:Rational;
 		private var log:Log = Log.instance;
 		
 		private var _timeElapsed:int = 0;
@@ -38,14 +37,6 @@ package lse.math.games.builder.viewmodel.action
 			_pay1 = pay1;
 			_pay2 = pay2;
 		}
-		
-		/*public function PayChangeAction(nodeId:int, pay1:Rational, pay2:Rational, pay3:Rational)
-		{
-			_nodeId = nodeId;
-			_pay1 = pay1;
-			_pay2 = pay2;
-			_pay3 = pay3;
-		}*/
 		
 		public function doAction(grid:TreeGrid):void 		
 		{

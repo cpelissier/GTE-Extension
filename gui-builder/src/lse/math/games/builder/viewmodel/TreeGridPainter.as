@@ -243,8 +243,7 @@ package lse.math.games.builder.viewmodel
 				color = 0x000000;
 			} else 
 			if (!isSelected && n.iset != null && n.iset.player != Player.CHANCE) {
-				//cmp: another disaster. this gets worse and worse as we add more players
-				color = (grid.firstPlayer == n.iset.player ? grid.player1Color : grid.firstPlayer.nextPlayer == n.iset.player ? grid.player2Color : grid.player3Color); 
+				color = (grid.firstPlayer == n.iset.player ? grid.player1Color : grid.player2Color); 
 				if (n.iset == grid.mergeBase) { 
 					color ^= 0xFFFFFF; // complement
 					color &= 0x7FFF7F; // not too bright, and greenish
@@ -265,10 +264,7 @@ package lse.math.games.builder.viewmodel
 			
 			var father:Node = n.parent;
 			if(father != null && n.reachedby != null) {
-				//CMP: This is a disaster. Rewrite using if statements for readability. 
-				var color:uint = selected ? 0xFFD700 : father.iset.player == Player.CHANCE ? 0x000000 : 
-				father.iset.player == grid.firstPlayer ? grid.player1Color : father.iset.player == grid.firstPlayer.nextPlayer ? grid.player2Color : grid.player3Color;
-				
+				var color:uint = selected ? 0xFFD700 : father.iset.player == Player.CHANCE ? 0x000000 : father.iset.player == grid.firstPlayer ? grid.player1Color : grid.player2Color;
 				var text:String = n.reachedby.label;			
 				//var text1:String = n.number.toString();		//for debugging
 				
@@ -299,26 +295,21 @@ package lse.math.games.builder.viewmodel
 			return selected;
 		}
 		
-		//CMP: Have to update this eventually 
 		private function assignOutcomeLabel(node:Node, grid:TreeGrid):void
 		{		
 			if (node.outcome != null) {
 				var p1:Player = grid.firstPlayer;
 				var p2:Player = grid.firstPlayer.nextPlayer;
-				var p3:Player = grid.firstPlayer.nextPlayer.nextPlayer;
 				var pay1:Rational = node.outcome.pay(p1);
 				var pay2:Rational = node.outcome.pay(p2);
-				var pay3:Rational = node.outcome.pay(p3);
 				var pay1Str:String = pay1.isNaN ? " " : pay1.toString();
 				var pay2Str:String = pay2.isNaN ? " " : pay2.toString();
-				var pay3Str:String = pay3.isNaN ? " " : pay3.toString();
 				
 				
 				if (glbSettings.getValue("SYSTEM_DECIMAL_LAYOUT")){
 					var dp:int=glbSettings.getValue("SYSTEM_DECIMAL_PLACES") as int;
 					pay1Str=String(roundTodecimal(pay1.floatValue,dp));
 					pay2Str=String(roundTodecimal(pay2.floatValue,dp));
-					pay3Str=String(roundTodecimal(pay3.floatValue,dp));
 				}					
 				
 				if (node.parameterPlayer1!=null) {
@@ -329,16 +320,9 @@ package lse.math.games.builder.viewmodel
 					pay2Str=node.parameterPlayer2;
 				}
 				
-				if (node.parameterPlayer3!=null) {
-					pay3Str=node.parameterPlayer3;
-				}
-				
-				
-				
 				
 				registerLabel(getOutcomeLabelKey(node, p1), pay1Str, grid.player1Color, grid.fontFamily, styleOutcome);
 				registerLabel(getOutcomeLabelKey(node, p2), pay2Str, grid.player2Color, grid.fontFamily, styleOutcome);
-				registerLabel(getOutcomeLabelKey(node, p3), pay3Str, grid.player3Color, grid.fontFamily, styleOutcome);
 				
 				if ((grid.rotate==1) || (grid.rotate==3)) {
 					registerLabel(getCommaLabelKey(node, p1), ",", 0x000000, grid.fontFamily, styleOutcome);
@@ -388,17 +372,15 @@ package lse.math.games.builder.viewmodel
 				}
 			}
 
-			//CMP 
 			if (n.outcome != null) 
 			{
 				var payoffLabel1:TextLine = this.labels[getOutcomeLabelKey(n, grid.firstPlayer)] as TextLine;				 
 				var payoffLabel2:TextLine = this.labels[getOutcomeLabelKey(n, grid.firstPlayer.nextPlayer)] as TextLine;
-				var payoffLabel3:TextLine = this.labels[getOutcomeLabelKey(n, grid.firstPlayer.nextPlayer.nextPlayer)] as TextLine;
 				var commaLabel:TextLine = null;
 				if ((grid.rotate==1) || (grid.rotate==3)) {
 					commaLabel = this.labels[getCommaLabelKey(n, grid.firstPlayer)] as TextLine;
 				}
-				positionOutcomeLabels(n, grid, payoffLabel1, payoffLabel2, payoffLabel3, commaLabel);
+				positionOutcomeLabels(n, grid, payoffLabel1, payoffLabel2,commaLabel);
 			}			
 			
 			var child:TreeGridNode = n.firstChild as TreeGridNode;
@@ -499,28 +481,20 @@ package lse.math.games.builder.viewmodel
 			this.moveLabel(label, labelxpos, labelypos);			
 		}
 		
-		//cmp ADD line for p3
-		private function positionOutcomeLabels(n:TreeGridNode, grid:TreeGrid, first:TextLine, second:TextLine, third:TextLine, comma:TextLine):void
+		private function positionOutcomeLabels(n:TreeGridNode, grid:TreeGrid, first:TextLine, second:TextLine,comma:TextLine):void
 		{							
 			var width1:Number = first.width;
 			var height1:Number = first.height;
 			var width2:Number = second.width;
 			var height2:Number = second.height;
 			
-			var width3:Number = first.width;
-			var height3:Number = first.height;
-			
 			var xpos1:Number;
 			var ypos1:Number;
 			var xpos2:Number;
 			var ypos2:Number;
 			
-			var xpos3:Number;
-			var ypos3:Number;
-			
 			var ascent1:Number = first.ascent;
 			var ascent2:Number = second.ascent;
-			var ascent3:Number = third.ascent; //[read-only] Specifies the number of pixels from the baseline to the top of the tallest characters in the line.
 			/* Always display horizontal
 			if (grid.rotate == 0) {
 				xpos1 = n.xpos - width1 / 2;
@@ -556,16 +530,6 @@ package lse.math.games.builder.viewmodel
 				xpos2 = n.xpos + width1 / 2 - width2;
 				ypos1 = n.ypos + ascent1 + pbuffy + pleafdisty;
 				ypos2 = n.ypos + ascent2 + height1 + 2*pbuffy + pleafdisty;
-				
-				//CMP: All payoffs are aligned in the same horizontal position. Only vertical position changes.
-				xpos3 = xpos1;
-				//CMP: Same yposition as ypos2 EXCEPT need to account for the height of P2's payoff. 
-				ypos3 = n.ypos + ascent2 + height1 + height2 + 2*pbuffy + pleafdisty;
-				
-				trace("ypos1: " + ypos1);
-				trace("ypos2: " + ypos2);
-				trace("height1: " + height1);
-				
 			} else if(grid.rotate == 1) {
 				
 				//with comma
@@ -600,7 +564,6 @@ package lse.math.games.builder.viewmodel
 			if ((grid.rotate == 0 ) || (grid.rotate == 2 )) {
 				this.moveLabel(first, xpos1, ypos1);
 				this.moveLabel(second, xpos2, ypos2);
-				this.moveLabel(third, xpos3, ypos3);
 			} else if(grid.rotate == 1) {
 				this.moveLabel(first, xpos1, ypos1);
 				this.moveLabel(comma, xpos1+width1, ypos1);

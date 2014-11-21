@@ -58,14 +58,6 @@
 			[Bindable]
 			private var pl2PayMapStr:String; 
 			
-			//CMP: Adding third player variables
-			[Bindable]
-			private var alpha3:String; //String with the strategies of pl2
-			[Bindable]
-			private var pl3NumStr:int;
-			[Bindable]
-			private var pl3PayMapStr:String; 
-			
 			[Bindable]
 			private var p1_strat_editable:Boolean=false;
 			[Bindable]
@@ -80,16 +72,6 @@
 			private var p2_numb_editable:Boolean=false;
 			[Bindable]
 			private var p2_payoffs_editable:Boolean=false;
-			
-			//CMP
-			[Bindable]
-			private var p3_strat_editable:Boolean=false;
-			[Bindable]
-			private var p3_numb_editable:Boolean=false;
-			[Bindable]
-			private var p3_payoffs_editable:Boolean=false;
-				
-		
 
 			[Bindable]
 			private var p2_text_cbg:uint=0xffffff;
@@ -98,40 +80,8 @@
 			[Bindable]
 			private var p2_num_cbg:uint=0xffffff;	
 			
-			//CMP
-			[Bindable]
-			private var p3_text_cbg:uint=0xffffff;
-			[Bindable]
-			private var p3_strat_cbg:uint=0xffffff;
-			[Bindable]
-			private var p3_num_cbg:uint=0xffffff;	
-			
 			[Bindable]
 			private var p1cbg:uint=0xffffff;
-			
-			//CMP: In the mxml code, we need to create panels that take up 100/pl3NumStr percent of the screen width. 
-			//We store this value in the following variable:
-			[Bindable]
-			private var panel_width:Number =0;
-			
-			//CMP: We use an array to store the text that will be in each panel
-			[Bindable]
-			private var ptxt:Array;
-			
-			[Bindable]
-			private var test:String=null;
-		
-			
-			[Bindable]
-			private var panel_text_p1:Array=null;
-			[Bindable]
-			private var panel_text_p2:Array=null;
-			[Bindable]
-			private var panel_text_p3:Array=null;
-			
-			//CMP: Store the strategy names of P3 in an array so we can label them under the panels in the mxml code.
-			[Bindable]
-			private var pl3StratArr:Array;
 			
 			
 			
@@ -185,76 +135,10 @@
 			}
 
 			public function setDefaultStrategicForm():void {
-				
-				//CMP: New format. Colums seperated by space, rows seperated by new line, panels seperated by //
 				pl1NumStr = 2;
 				pl2NumStr = 2;
-				pl3NumStr = 3;
-				
-				//CMP: A sample 2x2x3 game. 
-				pl1PayMapStr = "1 2\n0 4//3 5\n7 9//11 12\n13 14";
-				pl2PayMapStr = "3 0\n0 1//4 6\n8 10//15 16\n17 18";
-				pl3PayMapStr = "5 6\n4 3//4 3\n2 1//19 20\n21 22";
-				
-				//var panelWidthInt = 100/pl3NumStr;
-				
-				generatePanelText();
-				
-				panel_width = 100/pl3NumStr;
-				
-				
-				
-				
-			}
-			
-			//CMP: Function used to generate text for each panel and store it in the ptxt array for later use in the MXML code. 
-			private function generatePanelText():void{
-				
-				
-				panel_text_p1 = pl1PayMapStr.split("//");
-				panel_text_p2 = pl2PayMapStr.split("//");
-				panel_text_p3 = pl3PayMapStr.split("//");
-				
-				var ret:Array = new Array(pl3NumStr);
-				
-				for(var i:int =0; i< ret.length; i++)
-				{
-				 	ret[i] = "";
-				}
-				
-				trace("TESTING PANEL TEXT");
-				
-				
-				//loop over panels
-				for (var panel:int =0; panel < ret.length; panel++)
-				{
-					var p1Rows:Array = panel_text_p1[panel].split("\n");
-					var p2Rows:Array = panel_text_p2[panel].split("\n");
-					var p3Rows:Array = panel_text_p3[panel].split("\n");
-					//loop over rows
-					for(var row:int =0; row < pl2NumStr; row++)
-					{
-						var p1Columns:Array = p1Rows[row].split(" ");
-						var p2Columns:Array = p2Rows[row].split(" ");
-						var p3Columns:Array = p3Rows[row].split(" ");
-						//loop over columns
-						for(var column:int =0; column < pl1NumStr; column++)
-						{
-							ret[panel] += p1Columns[column] + "," + p2Columns[column] + "," + p3Columns[column];
-							ret[panel] += "  ";
-						}
-						
-						ret[panel] += "\n";
-					}
-				}
-				
-				//trace(panel_text[0]);
-				
-				//test = panel_text[0];
-							
-				ptxt = ret;
-				
-				
+				pl1PayMapStr = "1 2 \n0 4";
+				pl2PayMapStr = "3 0 \n0 1";
 			}
 
 			public function setMode(isZero:Boolean):void {
@@ -281,15 +165,6 @@
 					p1_strat_editable=false;
 					p1_numb_editable=false;
 					p1_payoffs_editable=false;
-					
-					//CMP
-					p3_strat_editable=false;
-					p3_numb_editable=false;
-					p3_payoffs_editable=false;
-				
-					p3_text_cbg=0xcccccc;
-					p3_strat_cbg=0xcccccc;
-					p3_num_cbg=0xcccccc;	
 					
 					p2_text_cbg=0xcccccc;
 					p2_strat_cbg=0xcccccc;
@@ -320,13 +195,7 @@
 					alpha2 = strVec.join(delimeter);
 					pl2NumStr = strVec.length;		
 					pl2PayMapStr = payoffMatrixString(pl);
-				}else if(plIdx == 2) //player 3
-				{
-					alpha3 = strVec.join(delimeter);
-					pl3NumStr = strVec.length;		
-					pl3PayMapStr = payoffMatrixString(pl);
 				}
-				
 			}
 			
 			//Update the alphabets from the text boxes and autolabelling the rest
@@ -334,11 +203,9 @@
 				var delimeter:String=glbSettings.getValue(SCodes.EDITOR_MATRIX_DELIMETER) as String;
 				var inUse1:Vector.<String> = new Vector.<String>();
 				var inUse2:Vector.<String> = new Vector.<String>();
-				var inUse3:Vector.<String> = new Vector.<String>();
 				
 				var strVec1:Vector.<String> = new Vector.<String>();
 				var strVec2:Vector.<String> = new Vector.<String>();
-				var strVec3:Vector.<String> = new Vector.<String>();
 				
 				for each(var st:String in pl1StratInput.text.split(delimeter)) {
 					if(st != null && st.length>0) {
@@ -353,17 +220,9 @@
 					}
 				}
 				
-				//CMP
-				for each(st in pl3StratInput.text.split(delimeter)) {
-					if(st != null && st.length>0) {
-						inUse3.push(st.toString().toLowerCase());
-						strVec3.push(st);
-					}
-				}
-				
 				var al:AutoLabeller = new AutoLabeller();
-				al.uniqueLabelNum = (pl1NumStr+pl2NumStr+pl3NumStr-strVec1.length-strVec2.length-strVec3.length) > 0 ? 
-					pl1NumStr+pl2NumStr+pl3NumStr-strVec1.length-strVec2.length-strVec3.length : 0;
+				al.uniqueLabelNum = (pl1NumStr+pl2NumStr-strVec1.length-strVec2.length) > 0 ? 
+					pl1NumStr+pl2NumStr-strVec1.length-strVec2.length : 0;
 				
 				alpha1 = "";
 				for(var i:int = 0; i<pl1NumStr; i++)
@@ -395,32 +254,6 @@
 					}
 					alpha2+= (stratName+delimeter);
 				}
-				
-				//CMP
-				alpha3 = "";
-				for(i = 0; i<pl3NumStr; i++)
-				{
-					if(i<strVec3.length) 
-						stratName = strVec3[i].toString()
-					else {
-						while(true){
-							stratName = al.getNextAutoLabel_Player3(_matrix);
-							if(inUse3.indexOf(stratName.toLowerCase())<0)
-								break;
-						}
-					}
-					alpha3+= (stratName+delimeter);
-				}
-				
-				//Remove unnecessary whitespace at the end of the string
-				var tmp:String = alpha3.substr(0, alpha3.length - 1);
-				//CMP: Store P3 strategy names in an array.
-				pl3StratArr = tmp.split(" ");
-				
-				
-				
-				//trace("alpha3 : " + alpha3);
-				
 				
 			}
 			
@@ -1048,21 +881,11 @@
 		}
 	</fx:Style>
 	
-	
-	<!-- CMP: We need to declare ArrayCollections to use with the Repeater objects -->
-	
-	<fx:Declarations>
-		<mx:ArrayCollection id="payoffData" source="{ptxt}"/>
-		<mx:ArrayCollection id="pl3Strats" source="{pl3StratArr}"/>
-	</fx:Declarations>
-	
 
-		<s:VGroup width="1229" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" >
-		
-		<!-- Player 1 -->
+	<s:VGroup width="819" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" >
 		
 		<s:HGroup width="100%" gap="0" >
-			<s:VGroup width="33%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" >
+			<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" >
 				<s:Label height="20" color="#2323E6"
                         text="Player 1" fontSize="16"
 						verticalAlign="middle"/>
@@ -1072,15 +895,15 @@
                         text="Number of strategies: "
                         fontSize="14" verticalAlign="middle"/>
 					<s:TextInput tabIndex="1"
-                        editable="true"
+                        editable="{p1_numb_editable}"
                         id="pl1Dimensions" width="60"
                         widthInChars="22"
                         text="{pl1NumStr.toString()}" fontSize="16"
                         enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
                           if (symmetric_mode) {pl1StratInput.setFocus();} else {pl2Dimensions.setFocus();}"
-                        change="dataChanged=true;" contentBackgroundColor="white" />
+                        change="dataChanged=true;" contentBackgroundColor="{p1cbg}" />
 					<s:Label height="20" width="100%"
-                        text="(columns)" fontSize="14"
+                        text="(rows)" fontSize="14"
                         verticalAlign="middle"/>
 				</s:HGroup>	
 				
@@ -1088,21 +911,25 @@
 					<s:Label height="20" width="155"
                         text="Strategy names: " fontSize="14"
                         verticalAlign="middle"/>
-					<s:TextInput tabIndex="3" editable="true" id="pl1StratInput"
+					<s:TextInput tabIndex="3" editable="{p1_strat_editable}" id="pl1StratInput"
                         width="100%" widthInChars="22"
                         text="{alpha1}" fontSize="16" change="dataChanged=true;"
                         enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
-                           " 
-                        contentBackgroundColor="white" />
+                            pl2StratInput.setFocus();" 
+                        contentBackgroundColor="{p1cbg}" />
 				</s:HGroup>
 
-				
+				<s:Label height="20" color="#2323E6" text="Payoffs"
+                      fontSize="16" verticalAlign="middle"/>
+				<s:TextArea tabIndex="5" editable="{p1_payoffs_editable}" id="pl1PayMapStrBox"
+                    width="100%" widthInChars="30" fontFamily="myFontFamily"
+                    heightInLines="10" lineBreak="explicit"
+                    text="{pl1PayMapStr}" fontSize="20"
+                    change="pl1PayMapStr = pl1PayMapStrBox.text;dataChanged=true;"
+                    contentBackgroundColor="{p1cbg}"/>
 
 			</s:VGroup>
-			
-			<!-- Player 2 -->
-			
-			<s:VGroup width="33%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+			<s:VGroup width="50%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
 			
 				<s:Label height="20" color="#2323E6" text="Player 2"
                     fontSize="16" verticalAlign="middle"/>
@@ -1110,15 +937,15 @@
 					<s:Label height="20" width="155"
                         text="Number of strategies: "
                         fontSize="14" verticalAlign="middle"/>
-					<s:TextInput tabIndex="2" editable="true"
+					<s:TextInput tabIndex="2" editable="{p2_numb_editable}"
                         id="pl2Dimensions" width="60" widthInChars="22"
                         text="{pl2NumStr.toString()}"
                         fontSize="16"
                         enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
                                pl1StratInput.setFocus();"
-                        change="dataChanged=true;" contentBackgroundColor="white" />
+                        change="dataChanged=true;" contentBackgroundColor="{p2_num_cbg}" />
 					<s:Label height="20" width="100%"
-                        text="(rows)" fontSize="14" verticalAlign="middle"/>
+                        text="(columns)" fontSize="14" verticalAlign="middle"/>
 				
 				</s:HGroup>	
 				
@@ -1126,124 +953,34 @@
 					<s:Label height="20" width="155"
                         text="Strategy names:" fontSize="14" 
                         verticalAlign="middle"/>
-					<s:TextInput tabIndex="4" editable="true"
+					<s:TextInput tabIndex="4" editable="{p2_strat_editable}"
                         width="100%" id="pl2StratInput"
                         widthInChars="22" text="{alpha2}"
                         fontSize="16" change="dataChanged=true;" 
                         enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
-                           " 
-                        contentBackgroundColor="white" />
+                            pl1PayMapStrBox.setFocus();" 
+                        contentBackgroundColor="{p2_strat_cbg}" />
 				</s:HGroup>
 
-				
+				<s:Label height="20" color="#2323E6"
+                text="Payoffs" fontSize="16" verticalAlign="middle"/>
+				<s:TextArea tabIndex="6" editable="{p2_payoffs_editable}" id="pl2PayMapStrBox"
+                    width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="10" lineBreak="explicit" 
+                    text="{pl2PayMapStr}"
+                    fontSize="20"
+                    change="pl2PayMapStr = pl2PayMapStrBox.text;dataChanged=true;"
+                    contentBackgroundColor="{p2_text_cbg}" /> 
 			</s:VGroup>
-			
-			<!-- 
-			CMP: Player 3 -->
-			
-			<s:VGroup width="33%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
-			
-			<s:Label height="20" color="#2323E6" text="Player 3"
-                fontSize="16" verticalAlign="middle"/>
-			<s:HGroup  width="100%" verticalAlign="middle">
-				<s:Label height="20" width="155"
-                    text="Number of strategies: "
-                    fontSize="14" verticalAlign="middle"/>
-				<s:TextInput tabIndex="2" editable="true"
-                    id="pl3Dimensions" width="60" widthInChars="22"
-                    text="{pl3NumStr.toString()}"
-                    fontSize="16"
-                    enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
-                           pl1StratInput.setFocus();"
-                    change="dataChanged=true;" contentBackgroundColor="white" />
-				<s:Label height="20" width="100%"
-                    text="(panels)" fontSize="14" verticalAlign="middle"/>
-			
-			</s:HGroup>	
-			
-			<s:HGroup width="100%" verticalAlign="middle">
-				<s:Label height="20" width="155"
-                    text="Strategy names:" fontSize="14" 
-                    verticalAlign="middle"/>
-				<s:TextInput tabIndex="4" editable="true"
-                    width="100%" id="pl3StratInput"
-                    widthInChars="22" text="{alpha3}"
-                    fontSize="16" change="dataChanged=true;" 
-                    enter="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);
-                        " 
-                    contentBackgroundColor="white" />
-			</s:HGroup>
-
-		
-	
-		</s:VGroup>
-		
-
-						
-	</s:HGroup>
-	
-			<s:VGroup width="100%" paddingBottom="25" paddingLeft="5" paddingRight="5" paddingTop="25">
-				<s:HGroup width="100%" horizontalAlign="center">
-                <s:Label height="30" color="#2323E6" text="Payoffs"
-                      fontSize="30" verticalAlign="middle"/>
-				</s:HGroup>
-				
-			</s:VGroup>
-	
-	
-		<!-- CMP: Have to use HBox instead of HGroup as HGroup does not work as a parent for a mx:Repeater object -->	
-		
-		<mx:HBox width="100%" paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5">
-			
-			
-			<!-- CMP: We use a Repeater to loop over the array of panel_text (i.e. P3's strategies) and create a new TextArea for each one -->
-				<mx:Repeater id="payoffRep" dataProvider="{payoffData}">
-					<mx:VBox percentWidth="{panel_width}" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
-						
-	                
-							<s:TextArea tabIndex="6" editable="true" id="pl1PayMapStrBox"
-			                    width="100%" widthInChars="30" fontFamily="myFontFamily" heightInLines="10" lineBreak="explicit" 
-			                    text="{payoffRep.currentItem}"
-			                    fontSize="20"
-			                    change="pl1PayMapStr = pl1PayMapStrBox.text;dataChanged=true;"/> 
-	           
-	         		 </mx:VBox>
-	         	 </mx:Repeater>
-          
-        </mx:HBox>
-        
-        
-        
-        <mx:HBox width="100%" paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5" >
-        
-			<!--CMP: Same process as above. A Repeater is used to loop over each strategy of P3 and create labels undernearth the TextAreas -->
-			<mx:Repeater id="stratRep" dataProvider="{pl3Strats}">
-				<mx:VBox percentWidth="{panel_width}" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
-					<mx:HBox width="100%" horizontalAlign="center">
-	                <s:Label height="30" color="#0FA30F" text="P3:{stratRep.currentItem}"
-	                      fontSize="25" verticalAlign="middle"/>
-	                </mx:HBox>
-	            </mx:VBox>
-            </mx:Repeater>
-        </mx:HBox>
-        
-        
-        <s:VGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+		</s:HGroup>
+			<s:VGroup width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
 				<s:HGroup width="100%" horizontalAlign="center">
                 <s:Button tabIndex="7" enabled="{p1_payoffs_editable}"
                     label="Confirm changes and align payoffs" cornerRadius="0"
                     click="updateNumberOfStrategies(pl1Dimensions.text,pl2Dimensions.text);"
                     />
 				</s:HGroup>
+			</s:VGroup>
 				
-				
-				
-		</s:VGroup>
-			
-            
-			
-
 	</s:VGroup>
-	
 	
 </s:VGroup>

@@ -88,10 +88,6 @@ package lse.math.games.builder.viewmodel
 		/** Color of nodes, labels and payoffs of the second player */
 		public function get player2Color():uint { return fileSettings.getValue(SCodes.FILE_PLAYER_2_COLOR) as uint; }	
 		
-		//CMP. Player 3 Color (green) @DEFAULT_PLAYER_3_COLOR
-		/** Color of nodes, labels and payoffs of the third player */
-		public function get player3Color():uint { return fileSettings.getValue(SCodes.FILE_PLAYER_3_COLOR) as uint; }	
-		
 		//TODO: 3PL Check wherever player1Color was used, and those might all have to be modified to adapt to a 3rd one
 		
 		/** Font family used as a default for labels in nodes, isets, labels and payoffs */
@@ -153,19 +149,14 @@ package lse.math.games.builder.viewmodel
 			this.newPlayer("1");
 			this.newPlayer("2");
 			
-			//CMP. TEST: Add 3rd player
-			this.newPlayer("3");
-			
 			this.root = createNode();	
 			this.root.makeNonTerminal();
 			
 			if (settings.getValue("SYSTEM_ENABLE_GUIDANCE")){
 				this.root.iset.makeChance();
 				addChildTo(this.root.iset,this);
-			
+				
 			}
-			
-			trace("NUMBER OF PLAYERS: " + numPlayers);
 			
 		}
 		

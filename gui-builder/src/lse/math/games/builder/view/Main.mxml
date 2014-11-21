@@ -42,7 +42,6 @@
 			// Layout parameters
 			// ------------------------------------
 
-			
 			public var menuBarHeight:String = "30"; // orig: 30
 			public var buttonWidth1:String = "23";  // orig: 23
 			public var buttonHeight1:String = "24";  // orig: 24
@@ -203,11 +202,6 @@
 			 */
 			[Bindable]
 			private var _player2Name:String="";
-			
-			//CMP
-			
-			[Bindable]
-			private var _player3Name:String="";
 
 			/**
 			 * Indicates which player's payoffs are active in the menu bar
@@ -247,11 +241,6 @@
 			*/
 			[Bindable]
 			private var Player2InputVisible:Boolean=false;
-			
-			//cmp
-			
-			[Bindable]
-			private var Player3InputVisible:Boolean=false;
 			
 		
 
@@ -326,10 +315,7 @@
 			 */	
 			private function resetNewGuiButtons():void {
 				ngTreeAdd.selected=true;ngTreeDelete.selected=false;
-				ngPlayer1.selected=true;ngPlayer2.selected=false;
-				//cmp
-				ngPlayer3.selected=false;
-				ngChance.selected=false;
+				ngPlayer1.selected=true;ngPlayer2.selected=false;ngChance.selected=false;
 				Player1InputVisible=false;Player2InputVisible=false;
 				ngInfosetsJoin.selected=true;ngInfosetsDisjoin.selected=false;ngInfosetsCut.selected=false;
 			}
@@ -356,7 +342,7 @@
 						controller.zoomIn();	
 					}
 					arrowMenu.enabled=true;
-					log.add(Log.HINT,canvas.height +"x"+ canvas.width+"-"+scrollbarEF.height+"x"+scrollbarEF.width);
+					//log.add(Log.HINT,canvas.height +"x"+ canvas.width+"-"+scrollbarEF.height+"x"+scrollbarEF.width);
 										
 				} else {
 					controller.toggleMatrixMode();
@@ -448,23 +434,10 @@
 						ngPlayersStep.setStyle("icon",ngPlayersHoverIcon);
 						ngPlayer1Input.text=controller.grid.firstPlayer.name;
 						ngPlayer2Input.text=controller.grid.firstPlayer.nextPlayer.name;
-						
-						//CMP
-						if(grid.numPlayers == 3)
-						ngPlayer3Input.text=controller.grid.firstPlayer.nextPlayer.nextPlayer.name;
-						
 						Player1InputVisible=ngPlayer1.selected;
 						Player2InputVisible=ngPlayer2.selected;
-						
-						if(grid.numPlayers == 3)
-						Player3InputVisible=ngPlayer3.selected;
-						
 						_player1Name=ngPlayer1Input.text
 						_player2Name=ngPlayer2Input.text
-						
-						if(grid.numPlayers == 3)
-						_player3Name=ngPlayer3Input.text
-						
 						controller.getClickAction = getClickCallback(9);
 						controller.invalidate(true,false,true);
 						eStep0=true;eStep1=true;
@@ -850,8 +823,6 @@
 			}			
 			
 			
-			//CMP: NEED TO UPDATE THIS TO WORK FOR P3
-			
 			/**
 			 * Controlls mouse clicks on the canvas area and makes apropriate action calls.
 			 *@author Martin  
@@ -871,11 +842,6 @@
 								} else if (ngPlayer2.selected){
 									controller.getClickAction = getClickCallback(9);
 									controller.doActionAtWithPlayer(canvas.mouseX, canvas.mouseY,grid.firstPlayer.nextPlayer);
-								} 
-								//cmp
-								else if (ngPlayer3.selected){
-									controller.getClickAction = getClickCallback(9);
-									controller.doActionAtWithPlayer(canvas.mouseX, canvas.mouseY,grid.firstPlayer.nextPlayer.nextPlayer);
 								} else if (ngChance.selected) {
 									controller.getClickAction = getClickCallback(7);
 									controller.doActionAt(canvas.mouseX, canvas.mouseY);
@@ -1119,18 +1085,6 @@
 					ngPlayer2Input.text=controller.grid.firstPlayer.nextPlayer.name;
 				}
 			}
-			
-			//CMP. Next step: actually make this do something. Need to edit firstPlayer/nextPlayer convention. 
-			
-			private function keyDownNGPlayer3(event:KeyboardEvent):void{
-				if (event.keyCode==Keyboard.ENTER) {
-					controller.setPlayerName(controller.grid.firstPlayer.nextPlayer.nextPlayer,ngPlayer3Input.text);
-					_player3Name=ngPlayer3Input.text;
-				} else if (event.keyCode==Keyboard.ESCAPE) {
-					ngPlayer3Input.text=controller.grid.firstPlayer.nextPlayer.nextPlayer.name;
-				}
-			}
-			
 
 			/**
 			 * Handels focus loose event if the user changes the player 1 name
@@ -1148,13 +1102,6 @@
 			private function focusOutNGPlayer2(eventObj:Event):void {
 				controller.setPlayerName(controller.grid.firstPlayer.nextPlayer,ngPlayer2Input.text);
 				_player2Name=ngPlayer2Input.text;
-			}
-			
-			//CMP. 
-			
-			private function focusOutNGPlayer3(eventObj:Event):void {
-				controller.setPlayerName(controller.grid.firstPlayer.nextPlayer.nextPlayer,ngPlayer3Input.text);
-				_player3Name=ngPlayer3Input.text;
 			}
 			
 			
@@ -1187,15 +1134,8 @@
 				{
 					if (ngMovesPlayer==1) {
 						controller.grid.setPlayerMoves(controller.grid.firstPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
-					} 
-					else if (ngMovesPlayer==2) 
-					{
+					} else if (ngMovesPlayer==2) {
 						controller.grid.setPlayerMoves(controller.grid.firstPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
-					} 
-					//CMP: Update moves for P3
-					else if (ngMovesPlayer==3) 
-					{
-						controller.grid.setPlayerMoves(controller.grid.firstPlayer.nextPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
 					} 
 					controller.invalidate(true, false, true);
 				}
@@ -1207,20 +1147,12 @@
 			 */
 			private function onReturnFromPromptPayoffs():void
 			{
-				//CMP: Functionality for changing payoffs for P3 added. 
 				if(PromptTextInputCanvas.lastEnteredText!=null && PromptTextInputCanvas.lastEnteredText!="")
 				{
-					if (ngPayoffsPlayer==1) 
-					{
+					if (ngPayoffsPlayer==1) {
 						controller.grid.setPlayerPayoffs(controller.grid.firstPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
-					} 
-					else if (ngPayoffsPlayer==2) 
-					{
+					} else if (ngPayoffsPlayer==2) {
 						controller.grid.setPlayerPayoffs(controller.grid.firstPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
-					} 
-					else if (ngPayoffsPlayer==3) 
-					{
-						controller.grid.setPlayerPayoffs(controller.grid.firstPlayer.nextPlayer.nextPlayer,PromptTextInputCanvas.lastEnteredText.replace("\s+/g"," "));
 					} 
 					controller.invalidate(true, false, true);
 				}
@@ -1408,24 +1340,15 @@
 
 				<mx:Button id="ngTreeStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngTreeIcon}" overIcon="{ngTreeHoverIcon}" toolTip="Add and delete tree node" click="setExtensiveStep(0);" />
 				<mx:Spacer width="{playersStepSpacer}"/>	
-				
-				<!-- //CMP: Added extra player button, so re-aligned top bar. Temporary until new implementation. -->
-				<mx:Spacer width="{buttonWidth1}"/>	
 
 				<mx:Button id="ngPlayersStep" styleName="myButtonSkinless" alpha="0.3" width="{arrowWidth}" height="{arrowHeight}" icon="{ngPlayersIcon}" overIcon="{ngPlayersHoverIcon}" toolTip="Assign players to tree nodes" click="setExtensiveStep(1);" />	
 				<mx:Spacer width="{infosetsStepSpacer}"/>	
 
 				<mx:Button id="ngInfosetsStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngInfosetsIcon}" overIcon="{ngInfosetsHoverIcon}" toolTip="Merge node to infosets and disolve/cut infosets" click="setExtensiveStep(2);" />	
 				<mx:Spacer width="{movesStepSpacer}"/>	
-				
-				<!-- //CMP: Added extra player button, so re-aligned top bar. Temporary until new implementation. -->
-				<mx:Spacer width="{buttonWidth1}"/>	
 
 				<mx:Button id="ngMovesStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngMovesIcon}" overIcon="{ngMovesHoverIcon}" toolTip="Assign move labels to tree edges" click="setExtensiveStep(3);" />
 				<mx:Spacer width="{payoffsStepSpacer}"/>	
-				
-				<!-- //CMP: Added extra player button, so re-aligned top bar. Temporary until new implementation. -->
-				<mx:Spacer width="{buttonWidth1}"/>	
 
 				<mx:Button id="ngPayoffsStep" styleName="myButtonSkinless" width="{arrowWidth}" height="{arrowHeight}" icon="{ngPayoffsIcon}" overIcon="{ngPayoffsHoverIcon}" toolTip="Assign player payoffs to leafs" click="setExtensiveStep(4);" />
 			</s:HGroup>
@@ -1499,24 +1422,13 @@
 							<mx:Button id="ngChance" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/tumbling_dice.png')"  
 									   toggle="true" selected="false" click="setExtensiveStep(1);ngChance.selected=true;ngPlayer1.selected=false;ngPlayer2.selected=false;Player1InputVisible=false;Player2InputVisible=false;"
 									   toolTip="Assign CHANCE by clicking on a node"/>
-									   
-									   
 							<mx:Button id="ngPlayer1" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/user_1.png')" 
-									   toggle="true" selected="true" click="setExtensiveStep(1);ngPlayer1.selected=true;ngChance.selected=false;ngPlayer2.selected=false;ngPlayer3.selected=false;Player1InputVisible=true;Player2InputVisible=false;Player3InputVisible=false;" 
+									   toggle="true" selected="true" click="setExtensiveStep(1);ngPlayer1.selected=true;ngChance.selected=false;ngPlayer2.selected=false;Player1InputVisible=true;Player2InputVisible=false;" 
 									   toolTip="Assign PLAYER 1 by clicking on a node"/>
-									   
-									   
 							<mx:Button id="ngPlayer2" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/user_2.png')" 
-									   toggle="true" selected="false" click="setExtensiveStep(1);ngPlayer2.selected=true;ngPlayer1.selected=false;ngPlayer3.selected=false;ngChance.selected=false;Player1InputVisible=false;Player2InputVisible=true;Player3InputVisible=false;" 
+ 
+									   toggle="true" selected="false" click="setExtensiveStep(1);ngPlayer2.selected=true;ngPlayer1.selected=false;ngChance.selected=false;Player1InputVisible=false;Player2InputVisible=true;" 
 									   toolTip="Assign PLAYER 2 by clicking on a node" />
-									   
-							<!-- // CMP -->
-							<mx:Button id="ngPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/user_3.png')" 
-									   toggle="true" selected="false" 
-									   click="setExtensiveStep(1);ngPlayer3.selected=true;ngPlayer1.selected=false;ngPlayer2.selected=false;ngChance.selected=false;Player1InputVisible=false;Player2InputVisible=false;Player3InputVisible=true;" 
-									   toolTip="Assign PLAYER 3 by clicking on a node" />
-									   
-									   
 						</s:HGroup>
 
 						<mx:Spacer width="{infosetsStepSpacerButtons}"/>	
@@ -1542,13 +1454,6 @@
 							<mx:Button id="ngMovesPlayer2" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/font_2.png')"  
 									   click="setExtensiveStep(3);ngMovesPlayer=2;;PromptTextInputCanvas.show(onReturnFromPromptMoves, controller.grid.getPlayerMoves(controller.grid.firstPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_2_COLOR') as Number);"
 									   toolTip="Assign MOVES to PLAYER 2."/>
-							
-							<!-- //CMP: -->
-			
-							<mx:Button id="ngMovesPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/font_3.png')"  
-									   click="setExtensiveStep(3);ngMovesPlayer=3;;PromptTextInputCanvas.show(onReturnFromPromptMoves, controller.grid.getPlayerMoves(controller.grid.firstPlayer.nextPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_3_COLOR') as Number);"
-									   toolTip="Assign MOVES to PLAYER 3."/>		   
-							
 							<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/lightbulb.png')"   click="autoLabelMovesAction();" 
 									   toolTip="Assign MOVES automatically to all players"/>
 						</s:HGroup>
@@ -1562,13 +1467,6 @@
 							<mx:Button id="ngPayoffsPlayer2" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/brick_2.png')"  
 									   click="setExtensiveStep(4);ngPayoffsPlayer=2;PromptTextInputCanvas.show(onReturnFromPromptPayoffs, controller.grid.getPlayerPayoffs(controller.grid.firstPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_2_COLOR') as Number);" 
 									   toolTip="Assign PAYOFFS to PLAYER 2."/>
-									   
-							<!-- //CMP: -->
-							<mx:Button id="ngPayoffsPlayer3" styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/brick_3.png')"  
-									   click="setExtensiveStep(4);ngPayoffsPlayer=3;PromptTextInputCanvas.show(onReturnFromPromptPayoffs, controller.grid.getPlayerPayoffs(controller.grid.firstPlayer.nextPlayer.nextPlayer),0,0,2,settings.getValue('DEFAULT_PLAYER_3_COLOR') as Number);" 
-									   toolTip="Assign PAYOFFS to PLAYER 3."/>
-									   
-							
 							<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/wand.png')"   
 									   click="setExtensiveStep(4);controller.doAction(actions.randomPayoffs)" toolTip="Assign RANDOM PAYOFFS to all players." />
 							<mx:Button styleName="myButton" width="{buttonWidth1}" height="{buttonHeight2}" icon="@Embed(source='../../../../../../assets/icons/text_list_numbers_vert.png')"   
@@ -1584,34 +1482,18 @@
 					</s:HGroup>	
 					
 					<s:HGroup gap="-1" left="343" right="0" depth="3" verticalAlign="middle" clipAndEnableScrolling="true">
-					
-					
 						<s:VGroup  visible="{Player1InputVisible}" includeInLayout="{Player1InputVisible}">
 							<s:TextInput styleName="mxLabels" id="ngPlayer1Input" text="Player1" focusSkin="util.BouncingArrowFocusSkin" keyDown="keyDownNGPlayer1(event);"
 										 focusOut="focusOutNGPlayer1(event);" 
 										 toolTip="Change the player name of PLAYER 1"/>
 							<s:Label styleName="mxSmallLabels" text="Player 1 Name" />						
 						</s:VGroup>
-						
-						
-						
 						<s:VGroup  visible="{Player2InputVisible}" includeInLayout="{Player2InputVisible}">
 							<s:TextInput styleName="mxLabels" id="ngPlayer2Input" text="Player2" focusSkin="util.BouncingArrowFocusSkin" keyDown="keyDownNGPlayer2(event);"
 										 focusOut="focusOutNGPlayer2(event);"
 										 toolTip="Change the player name of PLAYER 2"/>
 							<s:Label styleName="mxSmallLabels" text="Player 2 Name" />
 						</s:VGroup>
-						
-						
-						<!-- //CMP: Enable changing Player 3 Name -->
-						
-						<s:VGroup  visible="{Player3InputVisible}" includeInLayout="{Player3InputVisible}">
-							<s:TextInput styleName="mxLabels" id="ngPlayer3Input" text="Player3" focusSkin="util.BouncingArrowFocusSkin" keyDown="keyDownNGPlayer3(event);"
-										 focusOut="focusOutNGPlayer3(event);"
-										 toolTip="Change the player name of PLAYER 3"/>
-							<s:Label styleName="mxSmallLabels" text="Player 3 Name" />
-						</s:VGroup>
-						
 					</s:HGroup>
 					
 					<MouseScroller id="scrollbarEF" width="100%" height="100%">

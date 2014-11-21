@@ -1,19 +1,3 @@
-/** CMP: A note on how to use flash debugging with FireFox and a command window.
- * Source: http://askubuntu.com/questions/214176/how-to-install-flash-player-11-debug-on-ubuntu-12-04
- * 
- * 1) Go to the Flash Player downloads site at http://www.adobe.com/support/flashplayer/downloads.html 
- * 2) Download Linux Flash Player Plugin Content Debugger
- * 3) Copy the libflashplayer.so file found in the archive to your browser plugins location (e.g. /usr/lib/flashplugin-installer/)
- * 4) Copy the /usr/ directory found in the archive to /usr. (e.g., use the command sudo cp -r usr/* /usr)
- * 5) Install the nspluginwrapper package and dependencies using the command: sudo apt-get install nspluginwrapper ia32-libs
- * 6) Touch the newly installed libflashplayer.so file with nspluginwrapper. Assuming your browser flash plugin location is /usr/lib/flashplugin-installer,
- * use the command: sudo nspluginwrapper -i /usr/lib/flashplugin-installer/libflashplayer.so 
- * 7) Make sure in the GTE file build.properties the debug flag is set to true.
- * 8) Recompile GTE and restart firefox.
- * 9) Debug logs can now be viewed at ~/.macromedia/Flash_Player/Logs/flashlog.txt where ~ is your home directory. 
- * (e.g. use the command tail -f .macromedia/Flash_Player/Logs/flashlog.txt) */
-
-
 package util
 {
 	import flash.errors.IllegalOperationError;

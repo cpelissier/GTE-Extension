@@ -84,9 +84,6 @@ package lse.math.games.builder.viewmodel
 		
 		/* Color of nodes, labels and payoffs of the second player */
 		private function get player2Color():uint { return fileSettings.getValue(SCodes.FILE_PLAYER_2_COLOR) as uint; }	
-		
-		/* CMP: Color of nodes, labels and payoffs of the second player */
-		private function get player3Color():uint { return fileSettings.getValue(SCodes.FILE_PLAYER_3_COLOR) as uint; }	
 				
 		/* Font family used as a default for labels in nodes, isets, labels and payoffs */
 		private function get fontFamily():String { return fileSettings.getValue(SCodes.FILE_FONT) as String; }
@@ -166,8 +163,6 @@ package lse.math.games.builder.viewmodel
 			var rows:Vector.<Strategy> = _matrix.strategies(_matrix.firstPlayer); // could return a vector of strategies?
 			var colorCols:uint = player2Color;
 			var cols:Vector.<Strategy> = _matrix.strategies(_matrix.firstPlayer.nextPlayer); // could return a vector of strategies?
-			var colorCells:uint = player3Color;
-			var cells:Vector.<Strategy> = _matrix.strategies(_matrix.firstPlayer.nextPlayer.nextPlayer); // could return a vector of strategies?
 			
 			numRows = 0;
 			for each (var row:Strategy in rows) {	
@@ -183,7 +178,7 @@ package lse.math.games.builder.viewmodel
 			
 			for (var pl:Player = _matrix.firstPlayer; pl != null; pl = pl.nextPlayer)
 			{
-				var color:uint = pl == _matrix.firstPlayer ? colorRows : pl == _matrix.firstPlayer.nextPlayer ? colorCols : colorCells;
+				var color:uint = pl == _matrix.firstPlayer ? colorRows : colorCols;
 				this.registerLabel(getPlayerKey(pl), pl.name, color, fontFamily, stylePlayer);
 				var matrix:Object = _matrix.payMatrixMap[pl];         // could return a matrix, given as input 2 players to intersect								
 				for each (row in rows) {					

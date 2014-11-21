@@ -5,8 +5,6 @@ package lse.math.games.builder.model
 	import mx.utils.StringUtil;
 	
 	import util.Log;
-	
-	//import util.TextLog;
 
 	/**	  
 	 * This class represents a full game-tree in its extensive form. 
@@ -59,21 +57,15 @@ package lse.math.games.builder.model
 		{
 			_root = null;
 			_firstPlayer = null;
-			_playerList.clear();
 			lastNodeNumber = 0;
 			lastOrderedIsetNumber = 0;
 			lastOrderedNodeNumber = 0;
 			_hasParameters=0;
-			//log.add(Log.DEBUG, "test");
 		}
 		
 		/** Creates a new player, assigning it as moving next of the last one currently existing in this tree */
-		public function newPlayer(name:String):Player 
-		{
-			var p : Player = new Player(name, this);
-			_playerList.add(p);
-			trace("size: " + _playerList.size());
-			return p;
+		public function newPlayer(name:String):Player {
+			return new Player(name, this);
 		}
 		
 		/** Creates a new node assigning it an autoincreasing ID */
@@ -564,7 +556,6 @@ package lse.math.games.builder.model
 			}	
 		}
 		
-		//cmp.. should be scalable 
 		private function iterateTreePayoffsAndSetAuto(x:Node,zeroSum:Boolean,firstPlayer:Player):void  
 		{
 			//Preorder

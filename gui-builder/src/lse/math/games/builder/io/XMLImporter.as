@@ -85,8 +85,7 @@ package lse.math.games.builder.io
 		 * List of versions:
 		 * <ul><li> -1 : Undetermined version </li>
 		 * <li> 0 : Old tree version (Mark Egesdal's) </li>
-		 * <li> 0.1 : First draft of unified XML version (Karen Bletzer's) </li>
-		 * <li> 0.3 : First draft of 3-player XML version </li></ul>
+		 * <li> 0.1 : First draft of unified XML version (Karen Bletzer's) </li></ul>
 		 */ 
 		public function get version():Number { return _version; }
 		
@@ -228,8 +227,8 @@ package lse.math.games.builder.io
 		//Loads from the header the player information
 		private function loadPlayers():void
 		{
-			if(_numPlayers != 3) //CMP: 3 Player Version
-				log.add(Log.ERROR_THROW, "Currently just games with 3 players are supported");
+			if(_numPlayers != 2) //TODO: 3PL
+				log.add(Log.ERROR_THROW, "Currently just games with 2 players are supported");
 			
 			if(_numPlayers == 0)
 				log.add(Log.ERROR, "Warning: The game contained no information about players. " +
@@ -584,8 +583,8 @@ package lse.math.games.builder.io
 		{
 			for each(var pl:Player in players)
 			{
-				var str:String = strats.(@player==pl.name)[0];
-				trace("str" + str);
+				//CMP: Use ID instead of name
+				var str:String = strats.(@player==pl.id)[0];
 				var params:Array = str.split("\"");
 				
 				var count:int = 0;
@@ -634,7 +633,8 @@ package lse.math.games.builder.io
 		//Loads payoff matrixes from <payoffs> tags
 		private function processPayoffMatrixes(payoffs:XMLList):void
 		{
-			var map:Dictionary = matrix.payMatrixMap;
+		
+			/*var map:Dictionary = matrix.payMatrixMap;
 			for each(var pl:Player in players)
 			{
 				//init the player's map
@@ -684,9 +684,63 @@ package lse.math.games.builder.io
 									"found was: "+countColumns+" where it should have been: "+size[matrix.firstPlayer]); 
 						}
 					}
+				}*/
+				
+				
+				var map:Dictionary = matrix.payMatrixMap;
+				var pl1:Player = matrix.firstPlayer; 
+				var pl2:Player = matrix.firstPlayer.nextPlayer;
+				
+				var pl1Map:Object = map[pl1];
+				
+				if(pl1Map == null)
+				{
+					pl1Map = new Object();
+					map[pl1] = pl1Map;
 				}
 				
-				//We check that the number of lines read is correct
+				var pl2Map:Object = map[pl2];
+				
+				if(pl2Map == null)
+				{
+					pl2Map = new Object();
+					map[pl2] = pl2Map;
+				}
+				
+				var str:String = payoffs[0];
+				var lines:Array = str.split("\n");
+				
+				
+				var pl1Strategies:Vector.<Strategy> = matrix.strategies(pl1);
+				var pl2Strategies:Vector.<Strategy> = matrix.strategies(pl2);
+				
+				var height:int = pl1Strategies.length;
+				var width:int = pl2Strategies.length;
+				
+				var linesCounter:int = 0;
+				
+				//Loop over P2's strategies 
+				for(var j:int = 0; j<height; j++)
+				{
+					//Loop over P1's strategies
+					for(var k:int = 0; k<width; k++)
+					{
+						var line:String = lines[linesCounter];	
+						var pay1:Rational = Rational.parse(line.split(",")[0]);
+						var pay2:Rational = Rational.parse(line.split(",")[1]);
+						trace("pay1 " + pay1 + "pay2 " + pay2)
+						pl1Map[keyFromCoords(k,j)] = pay1;
+						pl2Map[keyFromCoords(k,j)] = pay2;
+						linesCounter++;
+					}
+					
+				}
+				
+			
+				
+				
+				
+				/*//We check that the number of lines read is correct
 				var theoreticalSize:int = 1;
 				var dummyPl:Player = matrix.firstPlayer.nextPlayer;
 				while(dummyPl != null)
@@ -699,7 +753,7 @@ package lse.math.games.builder.io
 					log.add(Log.ERROR_THROW, "An inconsistency was found when loading the file" +
 						"in player "+pl+"'s payoff matrix. The number of lines found was: " +
 						countLines+" where it should have been: "+theoreticalSize);
-			}
+			}*/
 		}
 		
 		//Returns the key to access a payoff in a matrix from a pair of coords

@@ -67,8 +67,6 @@ package lse.math.games.builder.viewmodel
 			return chain;
 		}
 		
-		
-		//CMP need to add payoff for player 3
 		public function randomPayoffs(grid:TreeGrid):IAction
 		{
 			var chain:ActionChain = new ActionChain();			
