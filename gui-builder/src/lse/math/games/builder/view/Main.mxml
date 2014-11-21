@@ -1181,6 +1181,7 @@
 			 * Callback function from the Popup that appears if you cange Player moves on the canvas
 			 *@author Martin  
 			 */
+			//CMP: Allow changing moves for third player. Additionally, need to keep track whether ENTER, TAB, or ESC is pressed. 
 			private function onReturnFromPromptMoves():void
 			{
 				if(PromptTextInputCanvas.lastEnteredText!=null && PromptTextInputCanvas.lastEnteredText!="")

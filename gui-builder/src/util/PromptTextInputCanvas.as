@@ -87,6 +87,7 @@ package util
 			}
 		}
 		
+		//CMP: Need to add functions for keyPressedTab (for logging and functionality) and keyPressedEsc (for logging only)
 		private static function keyPressedEnter(event:KeyboardEvent):void{
 			
 			if (event.keyCode==13){
