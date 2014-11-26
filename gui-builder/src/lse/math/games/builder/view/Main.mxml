@@ -451,7 +451,7 @@
 						
 						//CMP
 						if(grid.numPlayers == 3)
-						ngPlayer3Input.text=controller.grid.firstPlayer.nextPlayer.nextPlayer.name;
+							ngPlayer3Input.text=controller.grid.firstPlayer.nextPlayer.nextPlayer.name;
 						
 						Player1InputVisible=ngPlayer1.selected;
 						Player2InputVisible=ngPlayer2.selected;
@@ -1120,7 +1120,7 @@
 				}
 			}
 			
-			//CMP. Next step: actually make this do something. Need to edit firstPlayer/nextPlayer convention. 
+			//CMP.
 			
 			private function keyDownNGPlayer3(event:KeyboardEvent):void{
 				if (event.keyCode==Keyboard.ENTER) {
@@ -1178,7 +1178,7 @@
 			}
 			
 			/**
-			 * Callback function from the Popup that appears if you cange Player moves on the canvas
+			 * Callback function from the Popup that appears if you change Player moves on the canvas
 			 *@author Martin  
 			 */
 			//CMP: Allow changing moves for third player. Additionally, need to keep track whether ENTER, TAB, or ESC is pressed. 

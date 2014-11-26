@@ -118,6 +118,13 @@ package lse.math.games.builder.view
 		private var _selectedLabelKey:String;
 		private var _controller:Presenter;
 		
+		/**
+			 * CMP: This function handels clicking on canvas to allow changing of strategy names and payoffs.
+			 * TODO: Simulate the spreadsheet functionality we wish to see in the HTML5/Javascript port by implementing:
+			 * <li> Tab functionality which saves the current entered value and moves to the next strategy/payoff in a left->right, up->down order
+			 * <li> Debugging to log which keys (ENTER, TAB, or ESC) were pressed and what values changed for a given strategy name or payoff. 
+			 * <li> Player name editing. 
+			 */	
 		/** Launches a prompt to edit a selected label. In future versions its functionality might be widened to nodes and other things */
 		public function selectAndEdit(controller:Presenter, x:Number, y:Number):void
 		{

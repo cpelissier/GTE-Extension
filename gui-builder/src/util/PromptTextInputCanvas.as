@@ -51,7 +51,7 @@ package util
 				ti.text=text;
 				ti.setStyle("focusSkin","null");
 				ti.setStyle("focusColor","#aa0000"); 
-				ti.addEventListener(KeyboardEvent.KEY_DOWN,keyPressedEnter);	
+				ti.addEventListener(KeyboardEvent.KEY_DOWN,keyPressed);	
 				ti.selectAll();
 				vg.addElement(ti);
 			} else if (mode==2) {
@@ -61,7 +61,7 @@ package util
 				ta.setStyle("borderStyle","solid");
 				ta.setStyle("borderColor",String(color));
 				ta.text=text;
-				ta.addEventListener(KeyboardEvent.KEY_DOWN,keyPressedEnter);	
+				ta.addEventListener(KeyboardEvent.KEY_DOWN,keyPressed);	
 				vg.addElement(ta);
 				ta.selectAll();
 				
@@ -87,17 +87,22 @@ package util
 			}
 		}
 		
-		//CMP: Need to add functions for keyPressedTab (for logging and functionality) and keyPressedEsc (for logging only)
-		private static function keyPressedEnter(event:KeyboardEvent):void{
+		//CMP: Need to add functionionality for tab and esc (logging and alternate behavior for tab)
+		private static function keyPressed(event:KeyboardEvent):void{
 			
+			//Enter pressed
 			if (event.keyCode==13){
 				PopUpManager.removePopUp(vg);
 				if (mode==1)
 					lastEnteredText=ti.text;
+					
 				else if (mode==2)
 					lastEnteredText=ta.text;
 				_onReturn();
-			} else if (event.keyCode==27){
+				
+			} 
+			//Esc pressed
+			else if (event.keyCode==27){
 				PopUpManager.removePopUp(vg);
 				lastEnteredText=null;
 				_onReturn();
