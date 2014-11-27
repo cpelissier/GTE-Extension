@@ -142,7 +142,8 @@ package lse.math.games.builder.view
 						if(labelKey.indexOf("iset_")==0)
 						{
 							log.add(Log.HINT, "Player name editing is not supported yet");
-						} else if(labelKey.indexOf("move_")==0)
+						} 
+						else if(labelKey.indexOf("move_")==0)
 						{						
 							PromptTextInputCanvas.show(onReturnFromPrompt, label.textBlock.content.rawText,x,y,1,0);
 							_selectedLabelKey = labelKey;
@@ -173,6 +174,7 @@ package lse.math.games.builder.view
 		}
 		
 		//Builds a 'edit action' which can be a LabelChangeAction or a PayChangeAction, depending on what was edited
+		//CMP: Update for 3 players. TODO: Have to add functionality for changing player names. 
 		private function getEditAction(grid:TreeGrid):IAction
 		{
 			var action:IAction = null;
@@ -181,7 +183,9 @@ package lse.math.games.builder.view
 			{
 				var id:int = parseInt(_selectedLabelKey.split("_")[1]);
 				action = new LabelChangeAction(id, PromptTextInputCanvas.lastEnteredText);
-			} else if(_selectedLabelKey.indexOf("outcome_")==0) {
+			} 
+			else if(_selectedLabelKey.indexOf("outcome_")==0) 
+			{
 				var payCode:String = (_selectedLabelKey.split("_")[1]);
 				id = parseInt(payCode.split(":")[0]);
 				var playerName:String = payCode.split(":")[1];
@@ -218,30 +222,40 @@ package lse.math.games.builder.view
 						}	
 					}
 				
+				//CMP: Set player's 3 payoff to null in zero-sum mode. To be updated later. 
 				if(grid.isZeroSum)
 				{
 					if(playerName == grid.firstPlayer.name) {
-						action = new PayChangeAction(id, pay, pay.negate());
+						action = new PayChangeAction(id, pay, pay.negate(), null);
 						if (grid.parameters==1)
 							grid.parameters--;
 					} else if(playerName == grid.firstPlayer.nextPlayer.name) {
-						action = new PayChangeAction(id, pay.negate(), pay);
+						action = new PayChangeAction(id, pay.negate(), pay, null);
 						if (grid.parameters==1)
 							grid.parameters--;
 					}
 				}else
 				{
 					if(playerName == grid.firstPlayer.name) {
-						action = new PayChangeAction(id, pay, null);
+						action = new PayChangeAction(id, pay, null, null);
 						if (grid.parameters==1)
 							grid.parameters--;
 					} else if(playerName == grid.firstPlayer.nextPlayer.name) {
-						action = new PayChangeAction(id, null, pay);
+						action = new PayChangeAction(id, null, pay, null);
 						if (grid.parameters==1)
 							grid.parameters--;
 					}
+					//CMP: set payoff for p3
+					else if(playerName == grid.firstPlayer.nextPlayer.nextPlayer.name) {
+						action = new PayChangeAction(id, null, null, pay);
+						if (grid.parameters==1)
+							grid.parameters--;
+					}
+					
+					
 				}
-			}else
+			}
+			else
 				log.add(Log.ERROR_THROW, "ERROR: Unknown type of Label being modified");
 			
 			return action;

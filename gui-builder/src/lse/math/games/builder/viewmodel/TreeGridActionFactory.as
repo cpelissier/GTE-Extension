@@ -42,8 +42,9 @@ package lse.math.games.builder.viewmodel
 				if (grid.isZeroSum) {
 					pay2 = pay1.negate();				
 				}
+				//CMP:TODO null for now until outcomeDataUpdate is updatd for 3 pay strs
 				if (!pay1.isNaN || !pay2.isNaN) { //if neither is a number don't bother...
-					var action:IAction = new PayChangeAction(nodeId, pay1, pay2);
+					var action:IAction = new PayChangeAction(nodeId, pay1, pay2, null);
 					chain.push(action);
 				}
 				
@@ -68,7 +69,7 @@ package lse.math.games.builder.viewmodel
 		}
 		
 		
-		//CMP need to add payoff for player 3
+		//CMP added random payoff for p3
 		public function randomPayoffs(grid:TreeGrid):IAction
 		{
 			var chain:ActionChain = new ActionChain();			
@@ -76,7 +77,8 @@ package lse.math.games.builder.viewmodel
 			{
 				var pay1:Rational = new Rational(randomInt(grid.maxPayoff), 1);
 				var pay2:Rational = grid.isZeroSum ? pay1.negate() : new Rational(randomInt(grid.maxPayoff), 1);
-				var action:IAction = new PayChangeAction(leaf.number, pay1, pay2);
+				var pay3:Rational = grid.isZeroSum ? null : new Rational(randomInt(grid.maxPayoff), 1);
+				var action:IAction = new PayChangeAction(leaf.number, pay1, pay2, pay3);
 				chain.push(action);
 			}
 			chain.push(_depthAdjuster);
@@ -135,6 +137,7 @@ package lse.math.games.builder.viewmodel
 			return chain;
 		}
 		
+		//CMP:TODO make zero-sum payoffs work for 3-players if possible. P3 gets null payoff for now. 
 		public function makeZeroSumPayoffs(grid:TreeGrid):IAction
 		{
 			var chain:ActionChain = new ActionChain();			
@@ -142,7 +145,7 @@ package lse.math.games.builder.viewmodel
 			{
 				if (leaf.outcome != null) {	
 					var pay:Rational = leaf.outcome.pay(grid.firstPlayer)
-					var action:IAction = new PayChangeAction(leaf.number, pay, pay.negate());
+					var action:IAction = new PayChangeAction(leaf.number, pay, pay.negate(), null);
 					chain.push(action);
 				}
 			}

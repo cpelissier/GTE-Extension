@@ -31,6 +31,7 @@ package lse.math.games.builder.viewmodel.action
 		
 		public function get timeElapsed():int {return _timeElapsed; }
 		
+		//CMP: TODO: update for 3 players. 
 		public function ParameterChangeAction(nodeId:int, player1:String, player2:String)
 		{
 			_nodeId = nodeId;

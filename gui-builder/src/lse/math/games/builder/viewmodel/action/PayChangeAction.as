@@ -32,11 +32,12 @@ package lse.math.games.builder.viewmodel.action
 		
 		public function get timeElapsed():int {return _timeElapsed; }
 		
-		public function PayChangeAction(nodeId:int, pay1:Rational, pay2:Rational)
+		public function PayChangeAction(nodeId:int, pay1:Rational, pay2:Rational, pay3:Rational)
 		{
 			_nodeId = nodeId;
 			_pay1 = pay1;
 			_pay2 = pay2;
+			_pay3 = pay3;
 		}
 		
 		/*public function PayChangeAction(nodeId:int, pay1:Rational, pay2:Rational, pay3:Rational)
@@ -47,6 +48,7 @@ package lse.math.games.builder.viewmodel.action
 			_pay3 = pay3;
 		}*/
 		
+		//CMP: Updated for 3 players
 		public function doAction(grid:TreeGrid):void 		
 		{
 			var prevTime:int = getTimer();
@@ -63,6 +65,10 @@ package lse.math.games.builder.viewmodel.action
 				if(_pay2!=null) {
 					outcome.setPay(grid.firstPlayer.nextPlayer, _pay2);
 					node.parameterPlayer2=null;
+				}
+				if(_pay3!=null) {
+					outcome.setPay(grid.firstPlayer.nextPlayer.nextPlayer, _pay3);
+					node.parameterPlayer3=null;
 				}
 			} else
 				log.add(Log.ERROR, "Couldn't find any suitable node with idx "+_nodeId, "PayChangeAction");
